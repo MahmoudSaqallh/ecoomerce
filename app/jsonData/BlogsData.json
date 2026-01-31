@@ -1,0 +1,122 @@
+[
+  {
+    "id" : 1,
+    "image" : "/blog-1.webp",
+    "date" : "25 jan , 2025",
+    "title" : "Trendsetter Chronicles : Unveiling the latest in fashion",
+    "smallTitle" : "Trendsetter fashion Unveiling" ,
+    "gallery" : [
+      "/my-app/public/blog-gallery-1.webp",
+      "/my-app/public/blog-gallery-2.webp",
+      "/my-app/public/blog-gallery-3.webp",
+      "/my-app/public/blog-gallery-4.webp",
+      "/my-app/public/blog-gallery-5.webp"
+    
+    ]
+  },
+  {
+    "id" : 2,
+    "image" : "/blog-2.webp",
+    "date" : "30 Jan, 2025",
+    "title" : "Runway Rundown: Decoding Fashion Week’s Best Looks",
+    "smallTitle" : "Trendsetter fashion Unveiling" ,
+    "gallery" : [
+      "/my-app/public/blog-gallery-1.webp",
+      "/my-app/public/blog-gallery-2.webp",
+      "/my-app/public/blog-gallery-3.webp",
+      "/my-app/public/blog-gallery-4.webp",
+      "/my-app/public/blog-gallery-5.webp"
+    
+    ]
+  },
+  {
+    "id" : 3,
+    "image" : "/blog-3.webp",
+    "date" : "17 Jan, 2025",
+    "title" : "Closet Confidential: Behind-the-Scenes of a Fashionista",
+    "smallTitle" : "Trendsetter fashion Unveiling" ,
+    "gallery" : [
+      "/my-app/public/blog-gallery-1.webp",
+      "/my-app/public/blog-gallery-2.webp",
+      "/my-app/public/blog-gallery-3.webp",
+      "/my-app/public/blog-gallery-4.webp",
+      "/my-app/public/blog-gallery-5.webp"
+    
+    ]
+  },
+  {
+    "id" : 4,
+    "image" : "/blog-4.webp",
+    "date" : "10 Jan, 2025",
+    "title" : "Fashion Forward: Spotlight on Emerging Designers",
+    "smallTitle" : "Trendsetter fashion Unveiling" ,
+    "gallery" : [
+      "/my-app/public/blog-gallery-1.webp",
+      "/my-app/public/blog-gallery-2.webp",
+      "/my-app/public/blog-gallery-3.webp",
+      "/my-app/public/blog-gallery-4.webp",
+      "/my-app/public/blog-gallery-5.webp"
+    
+    ]
+  },
+  {
+    "id" : 5,
+    "image" : "/blog-5.webp",
+    "date" : "10 Jan, 2025",
+    "title" : "Fashion Forward: Spotlight on Emerging Designers",
+    "smallTitle" : "Trendsetter fashion Unveiling" ,
+    "gallery" : [
+      "/my-app/public/blog-gallery-1.webp",
+      "/my-app/public/blog-gallery-2.webp",
+      "/my-app/public/blog-gallery-3.webp",
+      "/my-app/public/blog-gallery-4.webp",
+      "/my-app/public/blog-gallery-5.webp"
+    
+    ]
+  },
+  {
+    "id" : 6,
+    "image" : "/blog-6.webp",
+    "date" : "10 Jan, 2025",
+    "title" : "Fashion Forward: Spotlight on Emerging Designers",
+    "smallTitle" : "Trendsetter fashion Unveiling" ,
+    "gallery" : [
+      "/my-app/public/blog-gallery-1.webp",
+      "/my-app/public/blog-gallery-2.webp",
+      "/my-app/public/blog-gallery-3.webp",
+      "/my-app/public/blog-gallery-4.webp",
+      "/my-app/public/blog-gallery-5.webp"
+    
+    ]
+  },
+  {
+    "id" : 7,
+    "image" : "/blog-7.webp",
+    "date" : "10 Jan, 2025",
+    "title" : "Fashion Forward: Spotlight on Emerging Designers",
+    "smallTitle" : "Trendsetter fashion Unveiling" ,
+    "gallery" : [
+      "/my-app/public/blog-gallery-1.webp",
+      "/my-app/public/blog-gallery-2.webp",
+      "/my-app/public/blog-gallery-3.webp",
+      "/my-app/public/blog-gallery-4.webp",
+      "/my-app/public/blog-gallery-5.webp"
+    
+    ]
+  },
+  {
+    "id" : 8,
+    "image" : "/blog-8.webp",
+    "date" : "10 Jan, 2025",
+    "title" : "Fashion Forward: Spotlight on Emerging Designers",
+    "smallTitle" : "Trendsetter fashion Unveiling" ,
+    "gallery" : [
+      "/my-app/public/blog-gallery-1.webp",
+      "/my-app/public/blog-gallery-2.webp",
+      "/my-app/public/blog-gallery-3.webp",
+      "/my-app/public/blog-gallery-4.webp",
+      "/my-app/public/blog-gallery-5.webp"
+    
+    ]
+  }
+]

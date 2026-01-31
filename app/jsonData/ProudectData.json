@@ -1,0 +1,98 @@
+[
+  {
+    "id": 1,
+    "title": "Sophisticated Swagger Suit",
+    "image": "/product-1.webp",
+    "price": "$80",
+    "off": "Get 20% off",
+    "cate": "Dresses"
+  },
+  {
+    "id": 2,
+    "title": "Checkered Slim Collar Casual Shirt",
+    "image": "/product-2.webp",
+    "price": "$94",
+    "off": "Get 20% off",
+    "cate": "Outerwear"
+  },
+  {
+    "id": 3,
+    "title": "Solid Cut Away Collar Casual Shirt",
+    "image": "/product-3.webp",
+    "price": "$65",
+    "off": "Get 20% off",
+    "cate": "Outerwear"
+  },
+  {
+    "id": 4,
+    "title": "Athletic Mesh Sports Leggings",
+    "image": "/product-4.webp",
+    "price": "$75",
+    "off": "Get 20% off",
+    "cate": "Jacket"
+  },
+  {
+    "id": 5,
+    "title": "Best Denim Overalls Shorts",
+    "image": "/product-5.webp",
+    "price": "$70",
+    "off": "Get 20% off",
+    "cate": "Jacket"
+  },
+  {
+    "id": 6,
+    "title": "Best Plaid Wool Winter Coat",
+    "image": "/product-6.webp",
+    "price": "$68",
+    "off": "Get 20% off",
+    "cate": "Jacket"
+  },
+  {
+    "id": 7,
+    "title": "Comfy Lounge Jogger Pants",
+    "image": "/product-7.webp",
+    "price": "$79",
+    "off": "Get 20% off",
+    "cate": "Outerwear"
+  },
+  {
+    "id": 8,
+    "title": "Water Resistant Windbreaker Jacket",
+    "image": "/product-8.webp",
+    "price": "$97",
+    "off": "Get 20% off",
+    "cate": "Jacket"
+  },
+  {
+    "id": 9,
+    "title": "Classic Denim Skinny Jeans",
+    "image": "/product-9.webp",
+    "price": "$84",
+    "off": "Get 20% off",
+    "cate": "Outerwear"
+  },
+  {
+    "id": 10,
+    "title": "Stylish Fedora Hat Collection",
+    "image": "/product-10.webp",
+    "price": "$80",
+    "off": "Get 20% off",
+    "cate": "Dresses"
+  },
+  {
+    "id": 11,
+    "title": "Suede Ankle Booties Collection",
+    "image": "/product-11.webp",
+    "price": "$75",
+    "off": "Get 20% off",
+    "cate": "Dresses"
+  },
+  {
+    "id": 12,
+    "title": "Hiking Outdoor Gear Collection",
+    "image": "/product-12.webp",
+    "price": "$94",
+    "off": "Get 20% off",
+    "cate": "Tops"
+  }
+]
