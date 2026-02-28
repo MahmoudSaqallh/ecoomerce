@@ -23,30 +23,30 @@ const navLink: NavLink[] = [
       { label: "Wishlist", href: "/Ui-components/Pages/WishList" }
     ],
   }, 
-  {
-    label: "Blog",
-    href: "/my-app/app/Ui-components/Shop",
-    dropdown: [
-      { label: "Blog", href: "/my-app/app/Ui-components/Blogs" },
-      { label: "Blog Detailes", href: "/my-app/app/Ui-components/Blogs" },
-    ],
-  },
+{
+  label: "Blog",
+  href: "/Ui-components/Blogs",
+  dropdown: [
+    { label: "Blog", href: "/Ui-components/Blogs" },
+    { label: "Blog Detailes", href: "/Ui-components/Blogs" },
+  ],
+},
   {
     label: "Pages",
     href: "/my-app/app/Ui-components/Shop",
     dropdown: [
-      { label: "About Me", href: "/my-app/app/Ui-components/Pages/AboutAs" },
-      { label: "Pricing Table", href: "/my-app/app/Ui-components/Pages/Pricing" },
-      { label: "Gift Vouchers", href: "/my-app/app/Ui-components/Pages/Cart" },
-      { label: "Faq", href: "/my-app/app/Ui-components/Pages/Faq" },
-      { label: "Login", href: "/my-app/app/Ui-components/Pages/Login" },
-      { label: "Registration", href: "/my-app/app/Ui-components/Pages/Regester" },
-      { label: "Contact Us", href: "/my-app/app/Ui-components/Pages/Contact" },
+      { label: "About Me", href: "/Ui-components/Pages/AboutAs" },
+      { label: "Pricing Table", href: "/Ui-components/Pages/Pricing" },
+      { label: "Gift Vouchers", href: "/Ui-components/Pages/Giftvoucher" },
+      { label: "Faq", href: "/Ui-components/Pages/Faq" },
+      { label: "Login", href: "/Ui-components/Pages/Login" },
+      { label: "Registration", href: "/Ui-components/Pages/Regester" },
+      { label: "Contact Us", href: "/Ui-components/Pages/Contact" },
     ],
   },
   {
     label: "Countact Us",
-    href: "/my-app/app/Ui-components/Pages/Contact",
+    href: "/Ui-components/Pages/Contact",
   },
 ];
 
@@ -163,7 +163,7 @@ useEffect(()=> {
         {/* Right Side */}
         <div className="flex items-center gap-5">
           <Link
-            href="/my-app/app/Ui-components/Pages/Login"
+            href="/Ui-components/Pages/Login"
             className="login-link border-b border-gray-400 GolosText font-semibold  hidden lg:block"
           >
             Login / Regiseter

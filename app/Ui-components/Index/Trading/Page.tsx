@@ -101,7 +101,7 @@ export default function Trending() {
 
 
                         <div className=" relative left-0 bottom-0 lg:absolute lg:bottom-[-20px] lg:left-10 ">
-                            <Link href={`/Ui-components/Shop/${item.id}`}>
+                            <Link href={`/Ui-components/shop/${item.id}`}>
                                 <button className=" btn bg-black text-white cursor-pointer GolosText text-xl px-6 py-3 rounded-2xl w-full lg:w-auto lg:rounded-full border-3 border-white ">
                                   View Details
                                   </button>

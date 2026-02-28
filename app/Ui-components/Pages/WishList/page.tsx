@@ -16,8 +16,8 @@
   };
 
 
-  export default function Wishlist() {
-      const [WishList, setWishList] = useState<proudectType[]>([]) ;
+    export default function Wishlist() {
+        const [WishList, setWishList] = useState<proudectType[]>([]) ;
 
       useEffect(() => {
         const stored = localStorage.getItem("wishlist");
