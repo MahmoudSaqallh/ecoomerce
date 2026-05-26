@@ -110,36 +110,11 @@ export default function PoplouerProudect() {
                         <div className="overflow-hidden">
                         <Image src={item.image} alt={"image"} width={500} height={500} className="w-full h-full object-cover rounded-2xl  "/>
                         </div>
-                        <span className="absolute top-3 left-3 px-4 py-1 GolosText bg-white rounded-full ">
-                          {item.off }
-                        </span>
-
-                        <div className="absolute top-11 right-5 flex flex-col gap-2">
-                          <i onClick={() => addwishlist(item)}
-                          className="bi bi-balloon-heart produect-icon w-10 h-10 flex items-center justify-center text-white bg-black/40 cursor-pointer  rounded-full">
-                          </i>
-                          <i onClick={() => {addtocart(item)}} 
-                          className="bi bi-cart3 produect-icon w-10 h-10 flex items-center justify-center text-white bg-black/40 cursor-pointer  rounded-full">
-                          </i>
-                        </div>
 
 
-                        <div className=" relative left-0 bottom-0 lg:absolute lg:bottom-[-20px] lg:left-10 ">
-                            <Link href={`/Ui-components/shop/${item.id}`}>
-                                <button className=" btn bg-black text-white cursor-pointer GolosText text-xl px-6 py-3 rounded-2xl w-full lg:w-auto lg:rounded-full border-3 border-white ">
-                                  View Details
-                                  </button>
-                            </Link>
-                        </div>
+
                       </div>
-                              <Link href={`/Ui-components/Shop/${item.id}`}>
-                              <div className="prodect-content mt-5 md:mt-10 z-10 py-2">
-                                <div className="flex justify-between">
-                                  <h2 className="Lufga font-medium text-[18px] pr-5">{item.title}</h2>
-                                  <h3 className="GolosText font-semibold text-2xl ">{item.price}</h3>
-                                </div>
-                              </div>
-                          </Link>
+                         
                   </div>
                </div>
             )

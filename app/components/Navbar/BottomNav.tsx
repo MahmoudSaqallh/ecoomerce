@@ -13,6 +13,7 @@ type NavLink = {
 
 const navLink: NavLink[] = [
   { label: "Home", href: "/" },
+
   {
     label: "Shop",
     href: "/Ui-components/shop",
@@ -22,15 +23,17 @@ const navLink: NavLink[] = [
       { label: "Cart", href:"/Ui-components/Pages/Cart" },
       { label: "Wishlist", href: "/Ui-components/Pages/WishList" }
     ],
-  }, 
-{
-  label: "Blog",
-  href: "/Ui-components/Blogs",
-  dropdown: [
-    { label: "Blog", href: "/Ui-components/Blogs" },
-    { label: "Blog Detailes", href: "/Ui-components/Blogs" },
-  ],
-},
+  },
+
+  {
+    label: "Blog",
+    href: "/Ui-components/Blogs",
+    dropdown: [
+      { label: "Blog", href: "/Ui-components/Blogs" },
+      { label: "Blog Detailes", href: "/Ui-components/Blogs" },
+    ],
+  },
+
   {
     label: "Pages",
     href: "/my-app/app/Ui-components/Shop",
@@ -44,6 +47,7 @@ const navLink: NavLink[] = [
       { label: "Contact Us", href: "/Ui-components/Pages/Contact" },
     ],
   },
+
   {
     label: "Countact Us",
     href: "/Ui-components/Pages/Contact",
@@ -51,52 +55,89 @@ const navLink: NavLink[] = [
 ];
 
 export default function BottomNav() {
+
   const [isFixed, setIsFixed] = useState(false);
   const [menu, setMenu] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<Record<string, boolean>>({});
   const [wishlistCount, setwishlistCount] = useState(0);
-  const [countCart, setcountCart] = useState(0)
+  const [countCart, setcountCart] = useState(0);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
   const updateCounts = () => {
+
     const wishlist = JSON.parse(localStorage.getItem("wishlist") || "[]");
     const cart = JSON.parse(localStorage.getItem("cart") || "[]");
 
-    setwishlistCount(wishlist.length)
-    setcountCart(cart.length)
-  }
+    setwishlistCount(wishlist.length);
+    setcountCart(cart.length);
+  };
 
   useEffect(() => {
-      updateCounts()
-  },[]);
 
-  useEffect (() => {
-      const handler  = () =>  updateCounts();
-      window.addEventListener("storage" , handler);
-      return () => window.removeEventListener("storage" , handler)
-  },[]);
+    updateCounts();
 
+    const user = localStorage.getItem("loggedUser");
+    const token = localStorage.getItem("token");
 
-useEffect(()=> {
-  const interval = setInterval(() =>updateCounts() ,500);
-  return ()=>  clearInterval(interval)
-} ,[])
+    if (user || token) {
+      setIsLoggedIn(true);
+    }
+
+  }, []);
 
   useEffect(() => {
+
+    const handler = () => updateCounts();
+
+    window.addEventListener("storage", handler);
+
+    return () => window.removeEventListener("storage", handler);
+
+  }, []);
+
+  useEffect(() => {
+
+    const interval = setInterval(() => updateCounts(), 500);
+
+    return () => clearInterval(interval);
+
+  }, []);
+
+  useEffect(() => {
+
     const handleScroll = () => setIsFixed(window.scrollY > 50);
+
     window.addEventListener("scroll", handleScroll);
+
     return () => window.removeEventListener("scroll", handleScroll);
+
   }, []);
 
   const toggleDropdown = (label: string) => {
+
     setOpenDropdown((prev) => ({
-      ...Object.fromEntries(Object.keys(prev).map((key) => [key, false])),
+      ...Object.fromEntries(
+        Object.keys(prev).map((key) => [key, false])
+      ),
       [label]: !prev[label],
     }));
+
   };
 
   const toggleMenu = () => {
+
     setMenu((prev) => !prev);
-    setOpenDropdown({}); 
+    setOpenDropdown({});
+
   };
+
+  function logout() {
+
+    localStorage.removeItem("loggedUser");
+    localStorage.removeItem("token");
+
+    window.location.href = "/Ui-components/Pages/Login";
+  }
 
   return (
     <div
@@ -104,18 +145,20 @@ useEffect(()=> {
         isFixed ? "fixed top-0 left-0 z-50" : ""
       }`}
     >
+
       <div className="w-full flex items-center justify-between px-[8%] lg:px-[16%] text-gray-700">
 
+        {/* LOGO */}
         <Link
           href="/"
-          className={`text-4xl lg:text-3xl font-bold Audiowide text-black hidden  ${
+          className={`text-4xl lg:text-3xl font-bold Audiowide text-black hidden ${
             isFixed ? "lg:flex" : "hidden"
           }`}
         >
           Fashi<span className="text-(--second)"> Que</span>
         </Link>
 
-        {/* Logo Mobile */}
+        {/* MOBILE LOGO */}
         <Link
           href="/"
           className="text-4xl lg:text-3xl font-bold Audiowide text-black block lg:hidden"
@@ -123,88 +166,159 @@ useEffect(()=> {
           Fashi<span className="text-(--second)"> Que</span>
         </Link>
 
-        {/* Desktop Navbar */}
-        <nav className=" menu-link hidden lg:flex space-x-6 relative z-40">
+        {/* DESKTOP NAV */}
+        <nav className="menu-link hidden lg:flex space-x-6 relative z-40">
+
           {navLink.map((link) =>
             link.dropdown ? (
+
               <div key={link.label} className="relative group">
-                <Link href={link.href} className="flex GolosText items-center gap-1">
-                  {link.label} <Image src={menuDot} alt="menuDot" />
+
+                <Link
+                  href={link.href}
+                  className="flex GolosText items-center gap-1"
+                >
+                  {link.label}
+
+                  <Image src={menuDot} alt="menuDot" />
                 </Link>
 
-                {/* Dropdown Desktop */}
-                <div className="absolute bg-white left-0 top-full hidden group-hover:block bg-red shadow-xl p-2 border border-gray-100 rounded-lg min-w-[170px]">
+                {/* DROPDOWN */}
+                <div className="absolute bg-white left-0 top-full hidden group-hover:block shadow-xl p-2 border border-gray-100 rounded-lg min-w-[170px]">
+
                   {link.dropdown.map((item) => (
+
                     <Link
                       key={item.label}
                       href={item.href}
                       className="block px-4 py-2 rounded-md transition-all hover:bg-gray-50"
                     >
+
                       <div className="flex gap-2 items-center">
+
                         <Image src={menuDot} alt="menuDot" />
+
                         {item.label}
+
                       </div>
+
                     </Link>
+
                   ))}
+
                 </div>
+
               </div>
+
             ) : (
+
               <Link
                 key={link.label}
-                href={link.href} 
+                href={link.href}
                 className="flex GolosText items-center gap-2"
               >
-                {link.label} <Image src={menuDot} alt="menuDot" />
+                {link.label}
+
+                <Image src={menuDot} alt="menuDot" />
               </Link>
+
             )
           )}
+
         </nav>
 
-        {/* Right Side */}
+        {/* RIGHT SIDE */}
         <div className="flex items-center gap-5">
-          <Link
-            href="/Ui-components/Pages/Login"
-            className="login-link border-b border-gray-400 GolosText font-semibold  hidden lg:block"
-          >
-            Login / Regiseter
-          </Link>
 
-          <div className=" lg:flex items-center gap-6">
-            <Link href= "/Ui-components/Pages/WishList" className="relative">
+          {/* LOGIN / LOGOUT */}
+          {isLoggedIn ? (
+
+            <button
+              onClick={logout}
+              className="login-link border-b border-gray-400 GolosText font-semibold hidden lg:block cursor-pointer"
+            >
+              Logout
+            </button>
+
+          ) : (
+
+            <Link
+              href="/Ui-components/Pages/Login"
+              className="login-link border-b border-gray-400 GolosText font-semibold hidden lg:block"
+            >
+              Login / Register
+            </Link>
+
+          )}
+
+          {/* ICONS */}
+          <div className="lg:flex items-center gap-6">
+
+            <Link
+              href="/Ui-components/Pages/WishList"
+              className="relative"
+            >
               <i className="bi bi-balloon-heart text-3xl"></i>
+
               {wishlistCount > 0 && (
-                <span className="absolute -top-2  left-3 bg-black text-white text-sm  w-5 h-5  flex justify-center items-center rounded-full">
+
+                <span className="absolute -top-2 left-3 bg-black text-white text-sm w-5 h-5 flex justify-center items-center rounded-full">
                   {wishlistCount}
                 </span>
+
               )}
+
             </Link>
-            <Link href="/Ui-components/Pages/Cart" className="relative">
+
+            <Link
+              href="/Ui-components/Pages/Cart"
+              className="relative"
+            >
+
               <i className="bi bi-cart3 text-3xl"></i>
-                  {countCart > 0 && (
-                <span className="absolute -top-2  left-3 bg-black text-white text-sm  w-5 h-5  flex justify-center items-center rounded-full">
+
+              {countCart > 0 && (
+
+                <span className="absolute -top-2 left-3 bg-black text-white text-sm w-5 h-5 flex justify-center items-center rounded-full">
                   {countCart}
                 </span>
+
               )}
+
             </Link>
+
           </div>
 
-          {/* Mobile Menu Button */}
-          <div className=" flex items-center gap-4">
-            <button onClick={toggleMenu} className="text-2xl focus:outline-none">
+          {/* MOBILE MENU */}
+          <div className="flex items-center gap-4">
+
+            <button
+              onClick={toggleMenu}
+              className="text-2xl focus:outline-none"
+            >
               <i className="ri-menu-line lg:hidden flex items-center gap-4 cursor-pointer"></i>
-    
             </button>
+
           </div>
+
         </div>
+
       </div>
 
-      {/* Mobile Menu */}
+      {/* MOBILE MENU */}
       {menu && (
+
         <div className="lg:hidden bg-white border-t border-gray-200 mt-3 transition-all duration-500">
+
           {navLink.map((link) => (
-            <div key={link.label} className="border-b border-gray-100">
-          
+
+            <div
+              key={link.label}
+              className="border-b border-gray-100"
+            >
+
               {!link.dropdown && (
+
                 <Link
                   href={link.href}
                   className="block px-6 py-3 text-gray-700"
@@ -212,9 +326,9 @@ useEffect(()=> {
                 >
                   {link.label}
                 </Link>
+
               )}
 
-              {/* link مع dropdown */}
               {link.dropdown && (
                 <>
                   <button
@@ -222,18 +336,25 @@ useEffect(()=> {
                     className="w-full flex justify-between items-center px-6 py-3 text-gray-700"
                   >
                     {link.label}
+
                     <span
                       className={`transition-transform ${
-                        openDropdown[link.label] ? "rotate-180" : ""
+                        openDropdown[link.label]
+                          ? "rotate-180"
+                          : ""
                       }`}
                     >
                       <i className="ri-arrow-down-s-line transition-transform"></i>
                     </span>
+
                   </button>
 
                   {openDropdown[link.label] && (
+
                     <div className="pl-8 pb-2">
+
                       {link.dropdown.map((item) => (
+
                         <Link
                           key={item.label}
                           href={item.href}
@@ -242,15 +363,24 @@ useEffect(()=> {
                         >
                           {item.label}
                         </Link>
+
                       ))}
+
                     </div>
+
                   )}
+
                 </>
               )}
+
             </div>
+
           ))}
+
         </div>
+
       )}
+
     </div>
   );
 }

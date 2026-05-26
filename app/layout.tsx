@@ -7,6 +7,7 @@ import Footer from "./components/Footer/Footer";
 import LayoutClient from "./LayoutClient";
 
 
+
 const aundiowide = Audiowide({
   weight: "400", 
   variable: "--font-audiowide",
@@ -59,6 +60,7 @@ export default function RootLayout({
         
 
         <LayoutClient>
+          
         {children}
         </LayoutClient>
       </body>
