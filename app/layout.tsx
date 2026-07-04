@@ -1,46 +1,44 @@
 import type { Metadata } from "next";
 import { Audiowide, Golos_Text } from "next/font/google";
 import "./globals.css";
-import localFont from 'next/font/local';
-import Navbar from "./components/Navbar/Navbar";
-import Footer from "./components/Footer/Footer";
+import localFont from "next/font/local";
+
 import LayoutClient from "./LayoutClient";
-
-
+import AuthGuard from "./components/AuthGuard/AuthGuard";
 
 const aundiowide = Audiowide({
-  weight: "400", 
+  weight: "400",
   variable: "--font-audiowide",
-  subsets:["latin"]
-})
+  subsets: ["latin"],
+});
+
 const golostext = Golos_Text({
-  weight: "500", 
+  weight: "500",
   variable: "--font-golostext",
-  subsets:["latin"]
-})
+  subsets: ["latin"],
+});
+
 const lufga = localFont({
-  src : [
+  src: [
     {
-      path : "../public/Lufga/Fontspring-DEMO-lufga-regular.otf" ,
-      weight: "400" ,
-      style: "normal"
-    } ,
-
+      path: "../public/Lufga/Fontspring-DEMO-lufga-regular.otf",
+      weight: "400",
+      style: "normal",
+    },
     {
-      path : "../public/Lufga/Fontspring-DEMO-lufga-medium.otf" ,
-      weight: "500" ,
-      style: "normal"
-    } ,
+      path: "../public/Lufga/Fontspring-DEMO-lufga-medium.otf",
+      weight: "500",
+      style: "normal",
+    },
     {
-      path : "../public/Lufga/Fontspring-DEMO-lufga-bold.otf" ,
-      weight: "700" ,
-      style: "normal"
-    }
-  ], 
+      path: "../public/Lufga/Fontspring-DEMO-lufga-bold.otf",
+      weight: "700",
+      style: "normal",
+    },
+  ],
 
-
-  variable: "--font-lufga" ,
-})
+  variable: "--font-lufga",
+});
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -55,13 +53,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${aundiowide.variable} ${golostext.variable}  ${lufga.variable}`}
+        className={`${aundiowide.variable} ${golostext.variable} ${lufga.variable}`}
       >
-        
-
         <LayoutClient>
-          
-        {children}
+          <AuthGuard>
+            {children}
+          </AuthGuard>
         </LayoutClient>
       </body>
     </html>
