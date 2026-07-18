@@ -213,7 +213,7 @@ export default function AddProductPage() {
           >
 
             <option value="cat-001">
-              Shirts
+              Shirt
             </option>
 
             <option value="cat-002">
@@ -221,15 +221,11 @@ export default function AddProductPage() {
             </option>
 
             <option value="cat-003">
-              Dresses
+              Jacket
             </option>
 
             <option value="cat-004">
-              Jackets
-            </option>
-
-            <option value="cat-005">
-              Shoes
+              Jenz
             </option>
 
           </select>

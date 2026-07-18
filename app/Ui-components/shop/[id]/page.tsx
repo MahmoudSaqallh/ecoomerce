@@ -18,6 +18,24 @@ type ProductType = {
   imageUrl: string;
 };
 
+const CATEGORY_LABELS: Record<string, string> = {
+  "cat-001": "Shirt",
+  "cat-002": "Pants",
+  "cat-003": "Jacket",
+  "cat-004": "Jenz",
+  "cat-005": "Jenz",
+  shirt: "Shirt",
+  pants: "Pants",
+  jacket: "Jacket",
+  jeans: "Jenz",
+  jenz: "Jenz",
+};
+
+function getCategoryLabel(categoryId: string) {
+  const key = String(categoryId || "").toLowerCase().trim();
+  return CATEGORY_LABELS[key] || String(categoryId);
+}
+
 export default function ProductDetailsPage() {
   const params = useParams();
 
@@ -26,6 +44,10 @@ export default function ProductDetailsPage() {
   const [quantity, setQuantity] = useState(1);
   const [activeSize, setActiveSize] = useState("");
   const [activeColor, setActiveColor] = useState("");
+  const [isWishlisted, setIsWishlisted] = useState(false);
+
+  const totalPrice = product ? product.price * quantity : 0;
+  const isOutOfStock = product ? product.stock <= 0 : false;
 
   useEffect(() => {
     async function getProduct() {
@@ -57,6 +79,10 @@ export default function ProductDetailsPage() {
 
   function addToCart() {
     if (!product) return;
+    if (isOutOfStock) {
+      toast.error("This product is out of stock");
+      return;
+    }
 
     const stored = localStorage.getItem("cart");
     const cart = stored ? JSON.parse(stored) : [];
@@ -82,6 +108,41 @@ export default function ProductDetailsPage() {
     toast.success("Added to cart");
   }
 
+  function addToWishlist() {
+    if (!product) return;
+
+    const stored = localStorage.getItem("wishlist");
+    const wishlist = stored ? JSON.parse(stored) : [];
+
+    const exists = wishlist.find((item: any) => item.id === product.id);
+    if (exists) {
+      const updated = wishlist.filter((item: any) => item.id !== product.id);
+      localStorage.setItem("wishlist", JSON.stringify(updated));
+      setIsWishlisted(false);
+      toast.info("Removed from wishlist");
+      return;
+    }
+
+    wishlist.push({
+      id: product.id,
+      title: product.name,
+      price: `$${product.price}`,
+      image: product.imageUrl,
+    });
+
+    localStorage.setItem("wishlist", JSON.stringify(wishlist));
+    setIsWishlisted(true);
+    toast.success("Added to wishlist");
+  }
+
+  useEffect(() => {
+    if (!product) return;
+    const stored = localStorage.getItem("wishlist");
+    const wishlist = stored ? JSON.parse(stored) : [];
+    const exists = wishlist.find((item: any) => item.id === product.id);
+    setIsWishlisted(!!exists);
+  }, [product]);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center text-4xl font-bold">
@@ -101,9 +162,17 @@ export default function ProductDetailsPage() {
   return (
     <>
       <div className="px-[8%] lg:px-[16%] py-12">
-        <Link href="/Ui-components/shop" className="text-gray-500">
-          ← Back to Shop
-        </Link>
+        <div className="text-sm text-gray-500 flex items-center gap-2 flex-wrap">
+          <Link href="/" className="hover:text-(--second)">
+            Home
+          </Link>
+          <i className="ri-arrow-right-s-line"></i>
+          <Link href="/Ui-components/shop" className="hover:text-(--second)">
+            Shop
+          </Link>
+          <i className="ri-arrow-right-s-line"></i>
+          <span className="text-black">{product.name}</span>
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 mt-8">
           <div className="bg-gray-100 rounded-3xl overflow-hidden">
@@ -124,11 +193,24 @@ export default function ProductDetailsPage() {
           </div>
 
           <div>
-            <p className="text-sm text-gray-500 mb-2">{product.categoryId}</p>
+            <p className="text-sm text-gray-500 mb-2">
+              {getCategoryLabel(product.categoryId)}
+            </p>
 
             <h1 className="text-5xl font-bold mb-4">{product.name}</h1>
 
-            <h2 className="text-4xl font-semibold mb-6">${product.price}</h2>
+            <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
+              <h2 className="text-4xl font-semibold">${product.price}</h2>
+              <span
+                className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                  isOutOfStock
+                    ? "bg-red-100 text-red-700"
+                    : "bg-green-100 text-green-700"
+                }`}
+              >
+                {isOutOfStock ? "Out of stock" : "In stock"}
+              </span>
+            </div>
 
             <p className="text-gray-600 text-lg leading-8 mb-6">
               {product.description}
@@ -187,19 +269,63 @@ export default function ProductDetailsPage() {
               <span className="text-xl">{quantity}</span>
 
               <button
-                onClick={() => setQuantity(quantity + 1)}
+                onClick={() =>
+                  setQuantity((prev) =>
+                    product.stock > 0 ? Math.min(product.stock, prev + 1) : prev
+                  )
+                }
                 className="w-10 h-10 rounded-full bg-black text-white hover:bg-gray-800 transition-all"
               >
                 +
               </button>
             </div>
 
-            <button
-              onClick={addToCart}
-              className="bg-black text-white px-8 py-4 rounded-xl w-full hover:bg-(--second) transition-all"
-            >
-              Add To Cart
-            </button>
+            <div className="bg-[#fff7e8] border border-black/10 rounded-2xl p-4 mb-6">
+              <div className="flex items-center justify-between text-gray-700">
+                <span>Quantity</span>
+                <span className="font-semibold">{quantity}</span>
+              </div>
+              <div className="flex items-center justify-between text-gray-700 mt-2">
+                <span>Total</span>
+                <span className="font-bold text-xl">${totalPrice.toFixed(2)}</span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 mb-6">
+              <button
+                onClick={addToCart}
+                disabled={isOutOfStock}
+                className="bg-black text-white px-8 py-4 rounded-xl w-full hover:bg-(--second) transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Add To Cart
+              </button>
+              <button
+                onClick={addToWishlist}
+                className={`border border-black px-5 py-4 rounded-xl transition-all ${
+                  isWishlisted
+                    ? "bg-red-500 text-white border-red-500"
+                    : "hover:bg-black hover:text-white"
+                }`}
+                title="Add to wishlist"
+              >
+                <i className={`bi ${isWishlisted ? "bi-heart-fill" : "bi-heart"}`}></i>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div className="border border-black/10 rounded-xl p-3 text-center">
+                <i className="bi bi-truck text-xl text-(--second)"></i>
+                <p className="text-sm mt-1">Fast Shipping</p>
+              </div>
+              <div className="border border-black/10 rounded-xl p-3 text-center">
+                <i className="bi bi-arrow-repeat text-xl text-(--second)"></i>
+                <p className="text-sm mt-1">Easy Returns</p>
+              </div>
+              <div className="border border-black/10 rounded-xl p-3 text-center">
+                <i className="bi bi-shield-check text-xl text-(--second)"></i>
+                <p className="text-sm mt-1">Secure Checkout</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>

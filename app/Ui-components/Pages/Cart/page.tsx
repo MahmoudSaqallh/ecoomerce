@@ -173,7 +173,7 @@ export default function CartPage() {
 
                 <Link href="/checkout">
                   <button className="btn border w-full border-black cursor-pointer hover:bg-black hover:text-white transition-all duration-300 GolosText text-xl px-6 py-3 rounded-md mt-4 bg-black text-white">
-                    Place Order
+                    Proceed to Checkout
                   </button>
                 </Link>
               </div>

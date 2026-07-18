@@ -1,14 +1,36 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 
-export default function EditProductPage() {
-  const router = useRouter();
+type Product = {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  categoryId: string;
+  sizes?: string[];
+  colors?: string[];
+  stock: number;
+  imageUrl?: string;
+};
 
-  const [products, setProducts] = useState<any[]>([]);
-  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+const CATEGORY_LABELS: Record<string, string> = {
+  "cat-001": "Shirt",
+  "cat-002": "Pants",
+  "cat-003": "Jacket",
+  "cat-004": "Jenz",
+  "cat-005": "Jenz",
+};
+
+function EditProductContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const productId = searchParams.get("id");
+
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const [form, setForm] = useState({
     name: "",
@@ -17,31 +39,43 @@ export default function EditProductPage() {
     stock: "",
   });
 
-  async function fetchProducts() {
-    try {
-      const response = await fetch("http://localhost:3001/api/items");
-      const data = await response.json();
-
-      setProducts(data.items || []);
-    } catch (error) {
-      toast.error("Failed to load products");
-    }
-  }
-
   useEffect(() => {
-    fetchProducts();
-  }, []);
+    if (!productId) {
+      router.replace("/admin/products");
+      return;
+    }
 
-  function handleSelectProduct(product: any) {
-    setSelectedProduct(product);
+    async function loadProduct() {
+      try {
+        const response = await fetch("http://localhost:3001/api/items");
+        const data = await response.json();
 
-    setForm({
-      name: product.name || "",
-      description: product.description || "",
-      price: String(product.price || ""),
-      stock: String(product.stock || ""),
-    });
-  }
+        const product = (data.items || []).find(
+          (item: Product) => item.id === productId
+        );
+
+        if (!product) {
+          toast.error("Product not found");
+          router.replace("/admin/products");
+          return;
+        }
+
+        setSelectedProduct(product);
+        setForm({
+          name: product.name || "",
+          description: product.description || "",
+          price: String(product.price || ""),
+          stock: String(product.stock || ""),
+        });
+      } catch {
+        toast.error("Failed to load product");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadProduct();
+  }, [productId, router]);
 
   async function handleUpdate(e: React.FormEvent) {
     e.preventDefault();
@@ -54,7 +88,7 @@ export default function EditProductPage() {
     }
 
     if (!selectedProduct) {
-      toast.error("Please select a product first");
+      toast.error("Product not loaded");
       return;
     }
 
@@ -72,6 +106,10 @@ export default function EditProductPage() {
             description: form.description,
             price: Number(form.price),
             stock: Number(form.stock),
+            categoryId: selectedProduct.categoryId,
+            sizes: selectedProduct.sizes ?? [],
+            colors: selectedProduct.colors ?? [],
+            imageUrl: selectedProduct.imageUrl ?? "",
           }),
         }
       );
@@ -82,78 +120,61 @@ export default function EditProductPage() {
         throw new Error(data.error || "Update Failed");
       }
 
+      const updatedProduct: Product = {
+        ...selectedProduct,
+        name: form.name,
+        description: form.description,
+        price: Number(form.price),
+        stock: Number(form.stock),
+      };
+
+      setSelectedProduct(updatedProduct);
       toast.success("Product Updated Successfully");
-
-      setSelectedProduct(null);
-
-      setForm({
-        name: "",
-        description: "",
-        price: "",
-        stock: "",
-      });
-
-      fetchProducts();
     } catch (error: any) {
       toast.error(error.message || "Failed to update product");
     }
   }
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#f6f2ea] p-8 flex items-center justify-center">
+        <p className="text-lg font-medium">Loading product...</p>
+      </div>
+    );
+  }
+
+  if (!selectedProduct) {
+    return null;
+  }
+
+  const categoryLabel =
+    CATEGORY_LABELS[selectedProduct.categoryId] || selectedProduct.categoryId;
+
   return (
     <div className="min-h-screen bg-[#f6f2ea] p-8">
-      <div className="max-w-5xl mx-auto bg-white p-8 rounded-3xl border border-black">
-        <h1 className="text-3xl font-bold mb-6">
-          Edit Product
-        </h1>
+      <div className="max-w-2xl mx-auto bg-white p-8 rounded-3xl border border-black">
+        <h1 className="text-3xl font-bold mb-2">Edit Product</h1>
 
-        <h2 className="text-xl font-bold mb-4">
-          Select Product
-        </h2>
+        <p className="text-gray-600 mb-6">
+          Editing: <span className="font-semibold">{selectedProduct.name}</span>
+        </p>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          {products.map((product) => (
-            <button
-              key={product.id}
-              type="button"
-              onClick={() =>
-                handleSelectProduct(product)
-              }
-              className={`border border-black rounded-2xl p-4 text-left cursor-pointer ${
-                selectedProduct?.id ===
-                product.id
-                  ? "bg-black text-white"
-                  : "bg-white text-black"
-              }`}
-            >
-              {product.imageUrl && (
-                <img
-                  src={product.imageUrl}
-                  alt={product.name}
-                  className="w-full h-40 object-cover rounded-xl mb-3"
-                />
-              )}
+        {selectedProduct.imageUrl && (
+          <img
+            src={selectedProduct.imageUrl}
+            alt={selectedProduct.name}
+            className="w-full h-48 object-cover rounded-xl mb-4 border border-black"
+          />
+        )}
 
-              <h3 className="font-bold">
-                {product.name}
-              </h3>
+        <p className="mb-6 px-4 py-3 bg-[#f6f2ea] border border-black rounded-xl">
+          Category: <span className="font-semibold">{categoryLabel}</span>
+          <span className="text-gray-500 text-sm ml-2">
+            ({selectedProduct.categoryId})
+          </span>
+        </p>
 
-              <p>{product.description}</p>
-
-              <p className="font-bold mt-2">
-                ${product.price}
-              </p>
-
-              <p>
-                Stock: {product.stock}
-              </p>
-            </button>
-          ))}
-        </div>
-
-        <form
-          onSubmit={handleUpdate}
-          className="space-y-5"
-        >
+        <form onSubmit={handleUpdate} className="space-y-5">
           <input
             placeholder="Product Name"
             value={form.name}
@@ -172,8 +193,7 @@ export default function EditProductPage() {
             onChange={(e) =>
               setForm({
                 ...form,
-                description:
-                  e.target.value,
+                description: e.target.value,
               })
             }
             className="w-full px-4 py-3 border border-black rounded-xl"
@@ -214,15 +234,27 @@ export default function EditProductPage() {
 
           <button
             type="button"
-            onClick={() =>
-              router.push("/admin")
-            }
+            onClick={() => router.push("/admin/products")}
             className="bg-gray-700 text-white px-6 py-3 rounded-xl w-full cursor-pointer"
           >
-            Back To Admin Panel
+            Back To Products
           </button>
         </form>
       </div>
     </div>
+  );
+}
+
+export default function EditProductPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[#f6f2ea] p-8 flex items-center justify-center">
+          <p className="text-lg font-medium">Loading...</p>
+        </div>
+      }
+    >
+      <EditProductContent />
+    </Suspense>
   );
 }
