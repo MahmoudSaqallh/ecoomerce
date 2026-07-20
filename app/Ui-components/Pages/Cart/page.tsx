@@ -22,14 +22,15 @@ export default function CartPage() {
   const [cart, setcart] = useState<CartType[]>([]);
 
   useEffect(() => {
-    const stored = localStorage.getItem("cart");
-    if (stored) setcart(JSON.parse(stored));
+    import("../../api/session").then(({ getCart }) => {
+      setcart(getCart());
+    });
   }, []);
 
   const removeItem = (id: string): void => {
     const updated = cart.filter((item) => item.id !== id);
     setcart(updated);
-    localStorage.setItem("cart", JSON.stringify(updated));
+    import("../../api/session").then(({ setCart }) => setCart(updated));
     toast.error("Removed From Cart");
   };
 
@@ -41,13 +42,14 @@ export default function CartPage() {
     );
 
     setcart(update);
-    localStorage.setItem("cart", JSON.stringify(update));
+    import("../../api/session").then(({ setCart }) => setCart(update));
   };
 
   const calculateTotal = () => {
     return cart.reduce((sum, item) => {
-      const price = Number(item.price.replace("$", ""));
-      return sum + price * item.qty;
+      const price = Number(String(item.price ?? "0").replace(/[^0-9.]/g, ""));
+      const qty = Number(item.qty || 1);
+      return sum + (Number.isFinite(price) ? price : 0) * qty;
     }, 0);
   };
 
@@ -69,11 +71,12 @@ export default function CartPage() {
                   >
                     <div className="flex items-center gap-5">
                       <img
-                        src={proudect.image || "/no-image.png"}
+                        src={proudect.image || "/no-image.svg"}
                         alt={proudect.title}
                         className="w-24 h-24 md:w-28 md:h-28 object-cover"
                         onError={(e) => {
-                          e.currentTarget.src = "/no-image.png";
+                          e.currentTarget.onerror = null;
+                          e.currentTarget.src = "/no-image.svg";
                         }}
                       />
 

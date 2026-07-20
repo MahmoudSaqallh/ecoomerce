@@ -103,7 +103,7 @@ export default function Blog() {
 
                       <div className="flex flex-col gap-10">
                         {posts.map((posts , index) => (
-                          <Link href={`/my-app/app/Ui-components/Blogs/${posts.id}`} key={index} className='flex items-center gap-5 cursor-pointer'>
+                          <Link href={`/Ui-components/Blogs/${posts.id}`} key={index} className='flex items-center gap-5 cursor-pointer'>
                             <div className="w-1/3 rounded-xl overflow-hidden ">
                                 <Image src={posts.image} alt={posts.image} width={500} height={500} className='w-full h-full object-cover' />
                             </div>

@@ -85,7 +85,15 @@ body {
 
 .hero-image {
   position: relative;
-    isolation: isolate; 
+  isolation: isolate;
+  overflow: visible;
+}
+
+.hero-image img,
+.hero-image .hero-main-img {
+  position: relative;
+  z-index: 20;
+  display: block;
 }
 
   .hero-image::after { 

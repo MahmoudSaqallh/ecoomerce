@@ -12,6 +12,8 @@ type CartItem = {
   image: string;
   off?: string;
   qty: number;
+  size?: string;
+  color?: string;
 };
 
 type ShippingInfo = {
@@ -41,17 +43,16 @@ export default function PaymentPage() {
     cardName: "",
   });
 
+  const [couponCode, setCouponCode] = useState("");
+  const [couponDiscount, setCouponDiscount] = useState(0);
+  const [appliedCoupon, setAppliedCoupon] = useState("");
+  const [couponLoading, setCouponLoading] = useState(false);
+
   useEffect(() => {
-    const savedCart = localStorage.getItem("cart");
-    const savedShipping = localStorage.getItem("shippingInfo");
-
-    if (savedCart) {
-      setCartItems(JSON.parse(savedCart));
-    }
-
-    if (savedShipping) {
-      setShipping(JSON.parse(savedShipping));
-    }
+    import("../../api/session").then(({ getCart, getShippingInfo }) => {
+      setCartItems(getCart());
+      setShipping(getShippingInfo());
+    });
   }, []);
 
   const subtotal = useMemo(() => {
@@ -62,7 +63,39 @@ export default function PaymentPage() {
   }, [cartItems]);
 
   const shippingFee = subtotal > 0 ? 0 : 0;
-  const total = subtotal + shippingFee;
+  const total = Math.max(0, subtotal + shippingFee - couponDiscount);
+
+  async function applyCoupon() {
+    const code = couponCode.trim();
+    if (!code) {
+      toast.error("Enter a coupon code");
+      return;
+    }
+    if (subtotal <= 0) {
+      toast.error("Cart is empty");
+      return;
+    }
+    setCouponLoading(true);
+    try {
+      const { validateCoupon } = await import("../../api/auth");
+      const result = await validateCoupon(code, subtotal);
+      setCouponDiscount(result.discount || 0);
+      setAppliedCoupon(code.toUpperCase());
+      toast.success(`Coupon applied — saved $${Number(result.discount).toFixed(2)}`);
+    } catch (err) {
+      setCouponDiscount(0);
+      setAppliedCoupon("");
+      toast.error(err instanceof Error ? err.message : "Invalid coupon");
+    } finally {
+      setCouponLoading(false);
+    }
+  }
+
+  function removeCoupon() {
+    setCouponCode("");
+    setCouponDiscount(0);
+    setAppliedCoupon("");
+  }
 
   function formatCardNumber(value: string) {
     const digits = value.replace(/\D/g, "").slice(0, 16);
@@ -121,17 +154,27 @@ export default function PaymentPage() {
 
     setIsSubmitting(true);
 
-    const sessionId =
-      localStorage.getItem("sessionId") || `session-${Date.now()}`;
-    localStorage.setItem("sessionId", sessionId);
-
     try {
-      const response = await fetch("http://localhost:3001/api/orders", {
+      const { getSessionId, clearCheckoutData } = await import(
+        "../../api/session"
+      );
+      const sessionId = getSessionId();
+      const apiUrl =
+        process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ||
+        "http://localhost:3002";
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("customerToken")
+          : null;
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+        "X-Session-Id": sessionId,
+      };
+      if (token) headers.Authorization = `Bearer ${token}`;
+
+      const response = await fetch(`${apiUrl}/api/orders`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Session-Id": sessionId,
-        },
+        headers,
         body: JSON.stringify({
           customerName: shipping.customerName,
           email: shipping.email,
@@ -142,6 +185,14 @@ export default function PaymentPage() {
             zip: shipping.zip,
           },
           paymentMethod,
+          cartItems: cartItems.map((item) => ({
+            id: item.id,
+            title: item.title,
+            qty: item.qty ?? 1,
+            size: item.size,
+            color: item.color,
+          })),
+          couponCode: appliedCoupon || undefined,
         }),
       });
 
@@ -151,10 +202,10 @@ export default function PaymentPage() {
         throw new Error(data.error || "Payment failed");
       }
 
-      localStorage.removeItem("cart");
-      localStorage.removeItem("shippingInfo");
+      clearCheckoutData();
       setIsSuccess(true);
       toast.success("Payment completed successfully!");
+      window.dispatchEvent(new Event("fashique-notifications-change"));
     } catch (error: any) {
       toast.error(error.message || "Something went wrong");
     } finally {
@@ -360,7 +411,7 @@ export default function PaymentPage() {
                       Pay with PayPal
                     </p>
                     <p className="text-gray-600 Lufga text-sm">
-                      You will be redirected to PayPal to complete your purchase securely.
+                      Demo checkout only — order is saved as pending (no real PayPal redirect).
                     </p>
                   </div>
                 )}
@@ -451,11 +502,12 @@ export default function PaymentPage() {
                       className="flex items-center gap-4 p-3 rounded-2xl border border-gray-100 bg-[#fffaf3]"
                     >
                       <img
-                        src={item.image || "/no-image.png"}
+                        src={item.image || "/no-image.svg"}
                         alt={item.title}
                         className="w-16 h-16 object-cover rounded-xl border"
                         onError={(e) => {
-                          e.currentTarget.src = "/no-image.png";
+                          e.currentTarget.onerror = null;
+                          e.currentTarget.src = "/no-image.svg";
                         }}
                       />
                       <div className="flex-1 min-w-0">
@@ -475,10 +527,50 @@ export default function PaymentPage() {
               </div>
 
               <div className="border-t border-gray-200 mt-6 pt-5 space-y-3">
+                <div className="rounded-2xl border border-gray-200 p-4 bg-[#fffaf3]">
+                  <p className="GolosText font-semibold mb-2">Coupon Code</p>
+                  {appliedCoupon ? (
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="Lufga text-sm font-medium text-green-700">
+                        {appliedCoupon} applied (-${couponDiscount.toFixed(2)})
+                      </span>
+                      <button
+                        type="button"
+                        onClick={removeCoupon}
+                        className="text-sm text-red-600 hover:underline"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2">
+                      <input
+                        value={couponCode}
+                        onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                        placeholder="SUMMER20"
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-xl outline-none focus:border-black text-sm"
+                      />
+                      <button
+                        type="button"
+                        onClick={applyCoupon}
+                        disabled={couponLoading}
+                        className="px-4 py-2 bg-black text-white rounded-xl text-sm font-semibold disabled:opacity-60"
+                      >
+                        Apply
+                      </button>
+                    </div>
+                  )}
+                </div>
                 <div className="flex justify-between Lufga text-gray-600">
                   <span>Subtotal</span>
                   <span>${subtotal.toFixed(2)}</span>
                 </div>
+                {couponDiscount > 0 && (
+                  <div className="flex justify-between Lufga text-green-600">
+                    <span>Discount</span>
+                    <span>-${couponDiscount.toFixed(2)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between Lufga text-gray-600">
                   <span>Shipping</span>
                   <span className="text-green-600 font-medium">Free</span>

@@ -32,11 +32,14 @@ export default function CheckoutPage() {
       return;
     }
 
-    localStorage.setItem("sessionId", "test-session-123");
-    localStorage.setItem("shippingInfo", JSON.stringify(form));
-
-    toast.success("Shipping details saved");
-    router.push("/Ui-components/Pages/Payment");
+    import("../Ui-components/api/session").then(
+      ({ setShippingInfo, getSessionId }) => {
+        getSessionId();
+        setShippingInfo(form);
+        toast.success("Shipping details saved");
+        router.push("/Ui-components/Pages/Payment");
+      }
+    );
   }
 
   return (

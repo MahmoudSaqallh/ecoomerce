@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Follower from "../Index/Follower/Page";
@@ -12,183 +13,201 @@ type proudectType = {
   description: string;
   price: number;
   categoryId: string;
+  subcategoryId?: string;
   sizes: string[];
   colors: string[];
   stock: number;
   imageUrl: string;
 };
 
-const CATEGORY_LABELS: Record<string, string> = {
-  "cat-001": "Shirt",
-  "cat-002": "Pants",
-  "cat-003": "Jacket",
-  "cat-004": "Jenz",
-  "cat-005": "Jenz",
-  shirt: "Shirt",
-  pants: "Pants",
-  jeans: "Jenz",
-  jenz: "Jenz",
-  jacket: "Jacket",
-};
+function ShopInner() {
+  const searchParams = useSearchParams();
 
-function getCategoryLabel(categoryId: string) {
-  const key = String(categoryId || "").toLowerCase().trim();
-  return CATEGORY_LABELS[key] || String(categoryId);
-}
-
-export default function Shop() {
-
-  const [products, setProducts] =
-    useState<proudectType[]>([]);
-
-  const [loading, setLoading] =
-    useState(true);
+  const [products, setProducts] = useState<proudectType[]>([]);
+  const [categories, setCategories] = useState<
+    Array<{
+      id: string;
+      name: string;
+      nameAr?: string;
+      active?: boolean;
+    }>
+  >([]);
+  const [loading, setLoading] = useState(true);
 
   const [query, setQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] =
-    useState<string>("all");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [sortBy, setSortBy] = useState<
     "featured" | "price-asc" | "price-desc" | "name-asc"
   >("featured");
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
+  const [selectedSize, setSelectedSize] = useState("all");
+  const [selectedColor, setSelectedColor] = useState("all");
+  const [inStockOnly, setInStockOnly] = useState(false);
+
+  function getCategoryLabel(categoryId: string) {
+    const cat = categories.find((c) => c.id === categoryId);
+    return cat?.nameAr || cat?.name || "";
+  }
 
   useEffect(() => {
+    const q = searchParams.get("q");
+    if (q) setQuery(q);
+    const cat = searchParams.get("category");
+    if (cat) setSelectedCategory(cat);
+  }, [searchParams]);
 
-    async function fetchProducts() {
-
+  useEffect(() => {
+    async function load() {
       try {
-
-        const response = await fetch(
-          "http://localhost:3001/api/items"
-        );
-
-        const data = await response.json();
-
-        setProducts(data.items);
-
+        const { fetchItems, fetchCategories } = await import("../api/auth");
+        const [itemsData, cats] = await Promise.all([
+          fetchItems(),
+          fetchCategories(),
+        ]);
+        setProducts(itemsData.items || []);
+        setCategories(cats || []);
       } catch (error) {
-
         console.log(error);
-
       } finally {
-
         setLoading(false);
-
       }
     }
 
-    fetchProducts();
-
+    load();
   }, []);
 
-  const categories = useMemo(() => {
+  const filterCategories = useMemo(
+    () => categories.filter((c) => c.active !== false),
+    [categories]
+  );
+
+  const allSizes = useMemo(() => {
     const set = new Set<string>();
-    for (const p of products) {
-      if (p.categoryId) set.add(String(p.categoryId));
-    }
+    products.forEach((p) => (p.sizes || []).forEach((s) => set.add(String(s))));
+    return Array.from(set);
+  }, [products]);
+
+  const allColors = useMemo(() => {
+    const set = new Set<string>();
+    products.forEach((p) =>
+      (p.colors || []).forEach((c) => set.add(String(c)))
+    );
     return Array.from(set);
   }, [products]);
 
   const filteredProducts = useMemo(() => {
     const q = query.trim().toLowerCase();
+    const min = minPrice !== "" ? Number(minPrice) : null;
+    const max = maxPrice !== "" ? Number(maxPrice) : null;
 
     let next = products.filter((p) => {
       const matchesCategory =
         selectedCategory === "all" ||
-        String(p.categoryId) === selectedCategory;
+        String(p.categoryId || "") === selectedCategory;
+
+      const catLabel = getCategoryLabel(String(p.categoryId || ""));
 
       const matchesQuery =
         !q ||
         p.name.toLowerCase().includes(q) ||
-        p.description.toLowerCase().includes(q) ||
-        getCategoryLabel(p.categoryId).toLowerCase().includes(q) ||
-        String(p.categoryId).toLowerCase().includes(q);
+        (p.description || "").toLowerCase().includes(q) ||
+        catLabel.toLowerCase().includes(q);
 
-      return matchesCategory && matchesQuery;
+      const matchesSize =
+        selectedSize === "all" ||
+        (p.sizes || []).some((s) => String(s) === selectedSize);
+
+      const matchesColor =
+        selectedColor === "all" ||
+        (p.colors || []).some((c) => String(c) === selectedColor);
+
+      const matchesStock = !inStockOnly || p.stock > 0;
+      const matchesMin = min == null || Number.isNaN(min) || p.price >= min;
+      const matchesMax = max == null || Number.isNaN(max) || p.price <= max;
+
+      return (
+        matchesCategory &&
+        matchesQuery &&
+        matchesSize &&
+        matchesColor &&
+        matchesStock &&
+        matchesMin &&
+        matchesMax
+      );
     });
 
-    if (sortBy === "price-asc") {
-      next = next.sort((a, b) => a.price - b.price);
-    } else if (sortBy === "price-desc") {
-      next = next.sort((a, b) => b.price - a.price);
-    } else if (sortBy === "name-asc") {
-      next = next.sort((a, b) =>
-        a.name.localeCompare(b.name)
-      );
-    }
+    if (sortBy === "price-asc") next = [...next].sort((a, b) => a.price - b.price);
+    else if (sortBy === "price-desc")
+      next = [...next].sort((a, b) => b.price - a.price);
+    else if (sortBy === "name-asc")
+      next = [...next].sort((a, b) => a.name.localeCompare(b.name));
 
     return next;
-  }, [products, query, selectedCategory, sortBy]);
+  }, [
+    products,
+    query,
+    selectedCategory,
+    sortBy,
+    categories,
+    minPrice,
+    maxPrice,
+    selectedSize,
+    selectedColor,
+    inStockOnly,
+  ]);
 
   const addwishlist = (
     proudect: proudectType
   ): void => {
+    import("../api/session").then(({ getWishlist, setWishlist }) => {
+      const wishlist = getWishlist();
+      const existi = wishlist.find(
+        (item: { id: string }) => item.id === proudect.id
+      );
 
-    const stored =
-      localStorage.getItem("wishlist");
+      if (existi) {
+        toast.info("Already in Wishlist");
+        return;
+      }
 
-    let wishlist: any[] =
-      stored ? JSON.parse(stored) : [];
+      wishlist.push({
+        id: proudect.id,
+        title: proudect.name,
+        price: `$${proudect.price}`,
+        image: proudect.imageUrl,
+      });
 
-    const existi = wishlist.find(
-      (item) => item.id === proudect.id
-    );
-
-    if (existi) {
-      toast.info("Already in Wishlist");
-
-      return;
-    }
-
-    wishlist.push({
-      id: proudect.id,
-      title: proudect.name,
-      price: `$${proudect.price}`,
-      image: proudect.imageUrl,
+      setWishlist(wishlist);
+      toast.success("Add to Wishlist");
     });
-
-    localStorage.setItem(
-      "wishlist",
-      JSON.stringify(wishlist)
-    );
-
-    toast.success("Add to Wishlist");
   };
 
   const addtocart = (
     proudect: proudectType
   ): void => {
+    import("../api/session").then(({ getCart, setCart }) => {
+      const cart = getCart();
+      const existi = cart.find(
+        (item: { id: string }) => item.id === proudect.id
+      );
 
-    const stored =
-      localStorage.getItem("cart");
+      if (existi) {
+        toast.info("Already in cart");
+        return;
+      }
 
-    let cart: any[] =
-      stored ? JSON.parse(stored) : [];
+      cart.push({
+        id: proudect.id,
+        title: proudect.name,
+        price: `$${proudect.price}`,
+        image: proudect.imageUrl,
+        qty: 1,
+      });
 
-    const existi = cart.find(
-      (item) => item.id === proudect.id
-    );
-
-    if (existi) {
-
-      toast.info("Already in cart");
-
-      return;
-    }
-
-    cart.push({
-      id: proudect.id,
-      title: proudect.name,
-      price: `$${proudect.price}`,
-      image: proudect.imageUrl,
-      qty: 1,
+      setCart(cart);
+      toast.success("Add to Cart");
     });
-
-    localStorage.setItem(
-      "cart",
-      JSON.stringify(cart)
-    );
-
-    toast.success("Add to cart");
   };
 
   if (loading) {
@@ -297,35 +316,109 @@ export default function Shop() {
             </div>
           </div>
 
-          <div className="mt-4 flex flex-wrap gap-3">
-            <button
-              type="button"
-              onClick={() => setSelectedCategory("all")}
-              className={`px-4 py-2 rounded-xl border transition-all cursor-pointer ${
-                selectedCategory === "all"
-                  ? "bg-black text-white border-black"
-                  : "bg-white text-black border-black/10 hover:border-black/30"
-              }`}
-            >
-              <span className="Lufga font-medium">All</span>
-            </button>
-
-            {categories.map((catId) => (
+          {filterCategories.length > 0 && (
+            <div className="mt-4 flex flex-wrap gap-3">
               <button
-                key={catId}
                 type="button"
-                onClick={() => setSelectedCategory(catId)}
+                onClick={() => setSelectedCategory("all")}
                 className={`px-4 py-2 rounded-xl border transition-all cursor-pointer ${
-                  selectedCategory === catId
+                  selectedCategory === "all"
                     ? "bg-black text-white border-black"
                     : "bg-white text-black border-black/10 hover:border-black/30"
                 }`}
               >
-                <span className="Lufga font-medium">
-                  {getCategoryLabel(catId)}
-                </span>
+                <span className="Lufga font-medium">All</span>
               </button>
-            ))}
+              {filterCategories.map((cat) => (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => setSelectedCategory(cat.id)}
+                  className={`px-4 py-2 rounded-xl border transition-all cursor-pointer ${
+                    selectedCategory === cat.id
+                      ? "bg-black text-white border-black"
+                      : "bg-white text-black border-black/10 hover:border-black/30"
+                  }`}
+                >
+                  <span className="Lufga font-medium">
+                    {cat.nameAr || cat.name}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+            <div>
+              <label className="block text-sm Lufga text-gray-600 mb-2">
+                Min price
+              </label>
+              <input
+                type="number"
+                min={0}
+                value={minPrice}
+                onChange={(e) => setMinPrice(e.target.value)}
+                className="w-full border border-black/10 bg-white rounded-2xl px-4 py-3 outline-none"
+                placeholder="0"
+              />
+            </div>
+            <div>
+              <label className="block text-sm Lufga text-gray-600 mb-2">
+                Max price
+              </label>
+              <input
+                type="number"
+                min={0}
+                value={maxPrice}
+                onChange={(e) => setMaxPrice(e.target.value)}
+                className="w-full border border-black/10 bg-white rounded-2xl px-4 py-3 outline-none"
+                placeholder="999"
+              />
+            </div>
+            <div>
+              <label className="block text-sm Lufga text-gray-600 mb-2">
+                Size
+              </label>
+              <select
+                value={selectedSize}
+                onChange={(e) => setSelectedSize(e.target.value)}
+                className="w-full border border-black/10 bg-white rounded-2xl px-4 py-3 outline-none"
+              >
+                <option value="all">All sizes</option>
+                {allSizes.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm Lufga text-gray-600 mb-2">
+                Color
+              </label>
+              <select
+                value={selectedColor}
+                onChange={(e) => setSelectedColor(e.target.value)}
+                className="w-full border border-black/10 bg-white rounded-2xl px-4 py-3 outline-none"
+              >
+                <option value="all">All colors</option>
+                {allColors.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex items-end">
+              <label className="flex items-center gap-2 border border-black/10 bg-white rounded-2xl px-4 py-3 w-full cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={inStockOnly}
+                  onChange={(e) => setInStockOnly(e.target.checked)}
+                />
+                <span className="Lufga text-sm">In stock only</span>
+              </label>
+            </div>
           </div>
 
           <div className="mt-4 text-gray-500 Lufga">
@@ -364,8 +457,8 @@ export default function Shop() {
                         alt={proudect.name}
                         className="w-full h-[450px] object-cover rounded-2xl"
                         onError={(e) => {
-                          e.currentTarget.src =
-                            "/no-image.png";
+                          e.currentTarget.onerror = null;
+                          e.currentTarget.src = "/no-image.svg";
                         }}
                       />
 
@@ -420,27 +513,25 @@ export default function Shop() {
                 {/* CONTENT */}
                 <Link
                   href={`/Ui-components/shop/${proudect.id}`}
+                  className="group block"
                 >
-
                   <div className="prodect-content mt-5 md:mt-10 z-10 py-2">
                     <p className="text-sm text-gray-500 mb-2 Lufga">
-                      {getCategoryLabel(proudect.categoryId)}
+                      {getCategoryLabel(String(proudect.categoryId || ""))}
                     </p>
 
-                    <div className="flex justify-between">
-
-                      <h2 className="Lufga font-medium text-[18px] pr-5">
+                    <div className="flex items-start justify-between gap-3">
+                      <h2 className="GolosText font-bold text-lg md:text-xl text-black line-clamp-2 tracking-tight pr-2">
                         {proudect.name}
                       </h2>
-
-                      <h3 className="GolosText font-semibold text-2xl">
+                      <h3 className="Lufga font-semibold text-xl text-(--second) shrink-0">
                         ${proudect.price}
                       </h3>
-
                     </div>
-
+                    <span className="inline-block mt-2 Lufga text-sm text-gray-500 underline underline-offset-4 group-hover:text-black transition-colors">
+                      Details
+                    </span>
                   </div>
-
                 </Link>
 
               </div>
@@ -461,5 +552,27 @@ export default function Shop() {
         autoClose={1500}
       />
     </>
+  );
+}
+export default function Shop() {
+  return (
+    <Suspense
+      fallback={
+        <div className="px-[8%] lg:px-[16%] py-10 min-h-screen">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+            {Array.from({ length: 6 }).map((_, idx) => (
+              <div
+                key={idx}
+                className="rounded-2xl bg-white border border-black/5 p-4"
+              >
+                <div className="h-[450px] rounded-2xl bg-gray-100 animate-pulse" />
+              </div>
+            ))}
+          </div>
+        </div>
+      }
+    >
+      <ShopInner />
+    </Suspense>
   );
 }

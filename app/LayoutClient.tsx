@@ -17,8 +17,8 @@ export default function LayoutClient({
   const hideLayout =
     pathname.includes("/Login") ||
     pathname.includes("/Regester") ||
-    pathname.includes("/admin") ||
     pathname.includes("/checkout") ||
+    pathname.includes("/Payment") ||
     pathname.includes("/offline");
 
   useEffect(() => {

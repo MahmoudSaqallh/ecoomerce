@@ -8,7 +8,7 @@ import { z } from "zod";
 import toast, { Toaster } from "react-hot-toast";
 
 import loginImg from "@/public/login-img.webp";
-import { login } from "../../api/auth";
+import { customerLogin } from "../../api/auth";
 
 const loginSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters"),
@@ -35,40 +35,34 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const users = JSON.parse(localStorage.getItem("users") || "[]");
+      const data = await customerLogin(username.trim(), password);
 
-      const user = users.find(
-        (u: any) => u.username === username && u.password === password
+      const { setLoggedUser } = await import("../../api/session");
+
+      setLoggedUser(
+        {
+          id: data.customer?.id,
+          username: data.customer?.name || username,
+          email: data.customer?.email,
+          phone: data.customer?.phone || "",
+        },
+        data.token
       );
 
-      if (user) {
-        localStorage.removeItem("cart");
-        localStorage.removeItem("wishlist");
-        localStorage.removeItem("orders");
-        localStorage.removeItem("sessionId");
+      toast.success("Login successful");
 
-        localStorage.setItem("loggedUser", JSON.stringify(user));
+      const params =
+        typeof window !== "undefined"
+          ? new URLSearchParams(window.location.search)
+          : null;
+      const rawNext = params?.get("next") || "/";
+      const next =
+        rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "/";
 
-        toast.success("User Login Success");
-
-        setTimeout(() => {
-          router.push("/");
-        }, 1200);
-
-        return;
-      }
-
-      const data = await login(username, password);
-
-      localStorage.setItem("token", data.token);
-
-      toast.success("Admin Login Success");
-
-      setTimeout(() => {
-        router.push("/admin");
-      }, 1200);
-    } catch (error: any) {
-      toast.error(error.message);
+      router.replace(next);
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "Login failed");
+    } finally {
       setLoading(false);
     }
   }
@@ -113,12 +107,7 @@ export default function Login() {
               </h2>
 
               <div className="flex mt-5 text-2xl items-center text-black">
-                <Link
-                  href="/"
-                  className="font-semibold hover:text-(--second) transition-all duration-300"
-                >
-                  Home
-                </Link>
+                <span className="font-semibold text-(--second)">FashiQue</span>
 
                 <i className="ri-arrow-right-wide-line pt-2 px-2"></i>
 
@@ -145,14 +134,14 @@ export default function Login() {
                 <form onSubmit={handleLogin}>
                   <div className="space-y-5">
                     <div>
-                      <label className="Lufga">Username</label>
+                      <label className="Lufga">Username or Email</label>
 
                       <input
                         type="text"
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
                         className="w-full px-4 py-3 border border-black bg-white hover:border-(--second) rounded-lg focus:outline-none"
-                        placeholder="Enter Username"
+                        placeholder="Enter Username or Email"
                       />
                     </div>
 

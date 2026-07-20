@@ -2,6 +2,21 @@
 
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import {
+  isAuthenticated,
+  syncAuthCookie,
+} from "../../Ui-components/api/session";
+
+const PUBLIC_ROUTES = [
+  "/Ui-components/Pages/Login",
+  "/Ui-components/Pages/Regester",
+];
+
+function isPublicRoute(pathname: string) {
+  return PUBLIC_ROUTES.some(
+    (p) => pathname === p || pathname.startsWith(`${p}/`)
+  );
+}
 
 export default function AuthGuard({
   children,
@@ -10,35 +25,58 @@ export default function AuthGuard({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-
-  const [loading, setLoading] = useState(true);
+  const publicPage = isPublicRoute(pathname);
+  const [allowed, setAllowed] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    const loggedUser = localStorage.getItem("loggedUser");
+    const check = () => {
+      const loggedIn = isAuthenticated();
+      syncAuthCookie();
 
-    const publicRoutes = [
-      "/Ui-components/Pages/Login",
-      "/Ui-components/Pages/Regester",
-    ];
+      if (publicPage) {
+        // Already logged in? send to home (or ?next=)
+        if (loggedIn && pathname.includes("/Login")) {
+          const params = new URLSearchParams(window.location.search);
+          const raw = params.get("next") || "/";
+          const next =
+            raw.startsWith("/") && !raw.startsWith("//") ? raw : "/";
+          router.replace(next);
+          return;
+        }
+        setAllowed(true);
+        return;
+      }
 
-    const isPublicRoute =
-      publicRoutes.includes(pathname);
+      if (loggedIn) {
+        setAllowed(true);
+        return;
+      }
 
-    if (!token && !loggedUser && !isPublicRoute) {
-      router.replace("/Ui-components/Pages/Login");
-      return;
-    }
+      setAllowed(false);
+      router.replace(
+        `/Ui-components/Pages/Login?next=${encodeURIComponent(pathname || "/")}`
+      );
+    };
 
-    setLoading(false);
-  }, [pathname, router]);
+    check();
+    window.addEventListener("fashique-auth-change", check);
+    window.addEventListener("storage", check);
 
-  if (loading) {
+    return () => {
+      window.removeEventListener("fashique-auth-change", check);
+      window.removeEventListener("storage", check);
+    };
+  }, [pathname, router, publicPage]);
+
+  if (!allowed) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#ffedd4]">
-        <h1 className="text-3xl font-bold">
-          Loading...
-        </h1>
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-10 w-10 rounded-full border-4 border-black/10 border-t-black animate-spin" />
+          <p className="text-lg font-medium text-gray-700">
+            {publicPage ? "Loading..." : "Redirecting to login..."}
+          </p>
+        </div>
       </div>
     );
   }

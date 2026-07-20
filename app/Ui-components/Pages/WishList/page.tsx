@@ -19,40 +19,38 @@ export default function Wishlist() {
   const [wishList, setWishList] = useState<ProductType[]>([]);
 
   useEffect(() => {
-    const stored = localStorage.getItem("wishlist");
-    if (stored) setWishList(JSON.parse(stored));
+    import("../../api/session").then(({ getWishlist }) => {
+      setWishList(getWishlist());
+    });
   }, []);
 
   const removeItem = (id: string): void => {
     const updated = wishList.filter((item) => item.id !== id);
 
     setWishList(updated);
-    localStorage.setItem("wishlist", JSON.stringify(updated));
+    import("../../api/session").then(({ setWishlist }) => setWishlist(updated));
 
     toast.error("Removed From Wishlist");
   };
 
   const addtocart = (product: ProductType): void => {
-    const stored = localStorage.getItem("cart");
-    let cart: (ProductType & { qty: number })[] = stored
-      ? JSON.parse(stored)
-      : [];
+    import("../../api/session").then(({ getCart, setCart }) => {
+      const cart = getCart();
+      const existi = cart.find((item: { id: string }) => item.id === product.id);
 
-    const existi = cart.find((item) => item.id === product.id);
+      if (existi) {
+        toast.info("Already in cart");
+        return;
+      }
 
-    if (existi) {
-      toast.info("Already in cart");
-      return;
-    }
+      cart.push({
+        ...product,
+        qty: 1,
+      });
 
-    cart.push({
-      ...product,
-      qty: 1,
+      setCart(cart);
+      toast.success("Add to cart");
     });
-
-    localStorage.setItem("cart", JSON.stringify(cart));
-
-    toast.success("Add to cart");
   };
 
   return (
@@ -98,11 +96,12 @@ export default function Wishlist() {
               >
                 <div className="flex items-center gap-5">
                   <img
-                    src={product.image || "/no-image.png"}
+                    src={product.image || "/no-image.svg"}
                     alt={product.title}
                     className="w-24 h-24 md:w-28 md:h-28 object-cover"
                     onError={(e) => {
-                      e.currentTarget.src = "/no-image.png";
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = "/no-image.svg";
                     }}
                   />
                 </div>

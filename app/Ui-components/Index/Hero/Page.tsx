@@ -1,75 +1,153 @@
-import Image from "next/image"
-import heroshap1 from "@/public/hero-shape1.svg"
-import HeroImg from "@/public/Hero.webp"
-import HeroSmall from "@/public/hero-small-1.webp"
-import HeroTest1 from "@/public/hero-test1.webp"
-import HeroTest2 from "@/public/hero-test2.webp"
-import HeroTest3 from "@/public/hero-test3.webp"
-import { BsBalloonHeart } from "react-icons/bs";
-import Link from "next/link"
+"use client";
+
+import Image from "next/image";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import HeroImg from "@/public/Hero.webp";
+import HeroSmall from "@/public/hero-small-1.webp";
+
+type Banner = {
+  id: string;
+  imageUrl: string;
+  title: string;
+  description: string;
+  buttonText: string;
+  link: string;
+};
+
+function isUploadedImage(url: string) {
+  return url.startsWith("http") || url.includes("/uploads/");
+}
 
 export default function Hero() {
+  const [banners, setBanners] = useState<Banner[]>([]);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const { fetchBanners } = await import("../../api/auth");
+        const data = await fetchBanners();
+        setBanners(data);
+      } catch {
+        setBanners([]);
+      }
+    }
+    void load();
+  }, []);
+
+  const mainBanner = banners[0];
+  const cardBanner = banners[1];
+
+  const title = mainBanner?.title || "Your Ultimate Online Store";
+  const description =
+    mainBanner?.description ||
+    "For all your needs. No code needed — plus free shipping on $99+ orders!";
+  const primaryLabel = mainBanner?.buttonText || "Our Shop";
+  const primaryLink = mainBanner?.link || "/Ui-components/shop";
+
+  const cardTitle = cardBanner?.title || "Summer Collection";
+  const cardDescription =
+    cardBanner?.description || "Fresh styles for the season";
+  const cardLink = cardBanner?.link || "/Ui-components/shop";
+
+  const mainUpload =
+    mainBanner?.imageUrl && isUploadedImage(mainBanner.imageUrl)
+      ? mainBanner.imageUrl
+      : null;
+  const cardUpload =
+    cardBanner?.imageUrl && isUploadedImage(cardBanner.imageUrl)
+      ? cardBanner.imageUrl
+      : null;
+
   return (
-    <>
     <div className="px-[8%] lg:px-[10%] lg:ps-[16%] py-10">
       <div className="flex flex-col lg:flex-row gap-5 justify-between items-center relative">
         <div className="hero-shape3"></div>
         <div className="hero-shape4"></div>
 
         <div className="w-full lg:w-1/2">
-            <div className="hero-content">
-              <h1 className="GolosText text-4xl md:text-7xl lg-text-[6rem] font-semibold">Your Ultimate</h1>
-              <div className="flex items-center gap-2">
-                <Image src={heroshap1} alt={"heroshap1"}/>
-                  <h1 className="GolosText text-3xl md:text-7xl lg-text-[6rem] font-semibold text-(--second)">Online Store</h1>
-              </div>
-              <h1 className="GolosText text-3xl md:text-6xl lg-text-[4.5rem] font-semibold">For All you Needs. </h1>
-              <p className="GolosText mt-3 text-xl md:text-2xl">No code need. Plus free shopping on <span className="text-(--second)">$99+</span> order!</p>
-              <div className="flex items-center gap-5 mt-5 ">
-                <Link href="/my-app/app/Ui-components/Shop" >
+          <div className="hero-content">
+            <h1 className="GolosText text-4xl md:text-7xl lg:text-[4rem] font-semibold leading-tight">
+              {title}
+            </h1>
+            <p className="GolosText mt-3 text-xl md:text-[1rem]">{description}</p>
+            <div className="flex items-center gap-5 mt-5 flex-wrap">
+              <Link href={primaryLink}>
                 <button className="btn bg-black text-white cursor-pointer GolosText text-xl px-6 py-3 rounded-md transition-all duration-300">
-                  Our Shop
+                  {primaryLabel}
                 </button>
-                </Link>
-                <Link href="/my-app/app/Ui-components/Shop/12" >
+              </Link>
+              <Link href="/Ui-components/shop">
                 <button className="btn border border-black hover:bg-black hover:text-white cursor-pointer GolosText text-xl px-6 py-3 rounded-md transition-all duration-300">
-                  View Details
+                  View Sale
                 </button>
-                </Link>
-  
-              </div>
+              </Link>
             </div>
+          </div>
         </div>
-
-
 
         <div className="w-full lg:w-1/2">
-            <div className="hero-image">
-              <div className="hero-sapes1"></div>
-              <div className="hero-sapes2"></div>
-              <div className="border-shap1"></div>
-              <div className="border-shap2"></div>
-              <div className="star-shap"></div>
-              <div className="star-shap2"></div>
-              <div className="star-shap3"></div>
+          <div className="hero-image min-h-[320px] md:min-h-[420px]">
+            <div className="hero-sapes1"></div>
+            <div className="hero-sapes2"></div>
+            <div className="border-shap1"></div>
+            <div className="border-shap2"></div>
+            <div className="star-shap"></div>
+            <div className="star-shap2"></div>
+            <div className="star-shap3"></div>
 
-              <div className="absolute top-90 right-0 shadow-2xl bg-[#ffffffcb] backdrop-blur-2xl px-3 py-2 flex items-center gap-2 rounded-2xl   ">
-                    <Image className="rounded-2xl" src={HeroSmall} alt="HeroSmall"/>
-                    <div className="w-full lg:w-[50%] relative">
-                      <h2 className="GolosText font-semibold">Cozy Knit Cardigan</h2>
-                      <h2 className="GolosText font-semibold text-(--second) mt-2">80$</h2>
-                      <i className="bi bi-basket absolute bottom-0 right-0 bg-(--second) hover:bg-(--prim) hover:text-black cursor-pointer text-white px-3 py-2 rounded-full transition-all duration-300"></i>
-                    </div>
+            <Link
+              href={cardLink}
+              className="absolute bottom-6 left-2 md:left-6 z-30 max-w-[280px] shadow-2xl bg-[#ffffffcb] backdrop-blur-2xl px-3 py-2 flex items-center gap-2 rounded-2xl"
+            >
+              {cardUpload ? (
+                <img
+                  src={cardUpload}
+                  alt={cardTitle}
+                  className="h-16 w-16 shrink-0 rounded-2xl object-cover"
+                />
+              ) : (
+                <Image
+                  src={HeroSmall}
+                  alt={cardTitle}
+                  width={64}
+                  height={64}
+                  className="h-16 w-16 shrink-0 rounded-2xl object-cover"
+                />
+              )}
+              <div className="min-w-0 flex-1 relative pe-10">
+                <h2 className="GolosText text-sm font-semibold line-clamp-1">
+                  {cardTitle}
+                </h2>
+                <p className="GolosText text-xs text-gray-600 line-clamp-1">
+                  {cardDescription}
+                </p>
+                <i className="bi bi-basket absolute bottom-0 right-0 bg-(--second) hover:bg-(--prim) hover:text-black cursor-pointer text-white px-3 py-2 rounded-full transition-all duration-300"></i>
               </div>
-                
-          
-              <Image className="w-full md: w-[80%] lg: w-[80%]" src={HeroImg} alt="heroimage"/>
-            </div>
-        </div>
+            </Link>
 
-        
+            <div className="relative z-20 flex justify-center lg:justify-end pt-2">
+              {mainUpload ? (
+                <img
+                  src={mainUpload}
+                  alt={title}
+                  className="w-full md:w-[80%] lg:w-[80%] max-h-[520px] rounded-2xl object-cover"
+                />
+              ) : (
+                <Image
+                  src={HeroImg}
+                  alt={title}
+                  width={720}
+                  height={900}
+                  priority
+                  className="w-full md:w-[80%] lg:w-[80%] h-auto max-h-[520px] rounded-2xl object-cover"
+                  sizes="(max-width: 768px) 100vw, 40vw"
+                />
+              )}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-    </>
-  )
+  );
 }

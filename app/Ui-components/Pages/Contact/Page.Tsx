@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
 export default function Contact() {
@@ -12,7 +12,28 @@ export default function Contact() {
     message: "",
   });
 
-  function handleSubmit(e: FormEvent) {
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+
+  useEffect(() => {
+    async function prefill() {
+      try {
+        const { getLoggedUser } = await import("../../api/session");
+        const user = getLoggedUser();
+        if (!user) return;
+        setForm((prev) => ({
+          ...prev,
+          name: prev.name || user.username || "",
+          email: prev.email || user.email || "",
+        }));
+      } catch {
+        // ignore
+      }
+    }
+    void prefill();
+  }, []);
+
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault();
 
     if (!form.name || !form.email || !form.phone || !form.message) {
@@ -20,8 +41,31 @@ export default function Contact() {
       return;
     }
 
-    toast.success("Message sent successfully");
-    setForm({ name: "", email: "", phone: "", message: "" });
+    setSending(true);
+    setSent(false);
+    try {
+      const { sendContactMessage } = await import("../../api/auth");
+      await sendContactMessage({
+        name: form.name.trim(),
+        email: form.email.trim().toLowerCase(),
+        phone: form.phone.trim(),
+        message: form.message.trim(),
+        subject: "Contact Us",
+      });
+      setSent(true);
+      toast.success("Message sent — our team will reply soon", {
+        duration: 5000,
+      });
+      window.dispatchEvent(new Event("fashique-auth-change"));
+      setForm({ name: "", email: "", phone: "", message: "" });
+    } catch (error: unknown) {
+      setSent(false);
+      toast.error(
+        error instanceof Error ? error.message : "Failed to send message"
+      );
+    } finally {
+      setSending(false);
+    }
   }
 
   return (
@@ -89,6 +133,27 @@ export default function Contact() {
               possible.
             </p>
 
+            {sent ? (
+              <div
+                className="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-emerald-900"
+                role="status"
+              >
+                <p className="GolosText text-lg font-semibold">
+                  Message received successfully
+                </p>
+                <p className="Lufga mt-1 text-sm text-emerald-800">
+                  Your message was sent to our team. You can also check{" "}
+                  <Link
+                    href="/Ui-components/Pages/Notifications"
+                    className="underline font-semibold hover:text-emerald-950"
+                  >
+                    Notifications
+                  </Link>
+                  .
+                </p>
+              </div>
+            ) : null}
+
             <form onSubmit={handleSubmit} className="space-y-5">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -99,6 +164,7 @@ export default function Contact() {
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
                     className="w-full px-4 py-3 border border-gray-300 bg-white rounded-xl focus:outline-none focus:border-black transition-colors"
                     placeholder="Your name"
+                    required
                   />
                 </div>
                 <div>
@@ -109,6 +175,7 @@ export default function Contact() {
                     onChange={(e) => setForm({ ...form, email: e.target.value })}
                     className="w-full px-4 py-3 border border-gray-300 bg-white rounded-xl focus:outline-none focus:border-black transition-colors"
                     placeholder="you@email.com"
+                    required
                   />
                 </div>
               </div>
@@ -121,6 +188,7 @@ export default function Contact() {
                   onChange={(e) => setForm({ ...form, phone: e.target.value })}
                   className="w-full px-4 py-3 border border-gray-300 bg-white rounded-xl focus:outline-none focus:border-black transition-colors"
                   placeholder="Enter phone number"
+                  required
                 />
               </div>
 
@@ -133,11 +201,16 @@ export default function Contact() {
                   placeholder="Write your message..."
                   rows={6}
                   maxLength={400}
+                  required
                 />
               </div>
 
-              <button className="btn bg-black text-white cursor-pointer GolosText px-6 py-3 rounded-xl transition-all duration-300 w-full md:w-auto">
-                Submit Message
+              <button
+                type="submit"
+                disabled={sending}
+                className="btn bg-black text-white cursor-pointer GolosText px-6 py-3 rounded-xl transition-all duration-300 w-full md:w-auto disabled:opacity-60"
+              >
+                {sending ? "Sending..." : "Submit Message"}
               </button>
             </form>
           </div>
