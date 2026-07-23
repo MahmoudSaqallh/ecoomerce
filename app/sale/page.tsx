@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Follower from "../Ui-components/Index/Follower/Page";
+import Follower from "../Ui-components/Index/Follower/Follower";
 
 type Product = {
   id: string;
@@ -73,22 +73,29 @@ export default function SalePage() {
   }, [products, selectedCategory]);
 
   const addToCart = (product: Product) => {
-    import("../Ui-components/api/session").then(({ getCart, setCart }) => {
-      const cart = getCart();
-      if (cart.find((item: { id: string }) => item.id === product.id)) {
-        toast.info("Already in cart");
-        return;
+    import("../Ui-components/api/session").then(
+      ({ getCart, setCart, requireLoginForAction, redirectToLogin }) => {
+        if (!requireLoginForAction()) {
+          toast.info("Please login to add to cart");
+          redirectToLogin("/sale");
+          return;
+        }
+        const cart = getCart();
+        if (cart.find((item: { id: string }) => item.id === product.id)) {
+          toast.info("Already in cart");
+          return;
+        }
+        cart.push({
+          id: product.id,
+          title: product.name,
+          price: `$${product.price}`,
+          image: product.imageUrl,
+          qty: 1,
+        });
+        setCart(cart);
+        toast.success("Added to cart");
       }
-      cart.push({
-        id: product.id,
-        title: product.name,
-        price: `$${product.price}`,
-        image: product.imageUrl,
-        qty: 1,
-      });
-      setCart(cart);
-      toast.success("Added to cart");
-    });
+    );
   };
 
   return (

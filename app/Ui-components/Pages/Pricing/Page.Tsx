@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import React from 'react'
-import Follower from '../../Index/Follower/Page'
+import Follower from '../../Index/Follower/Follower'
 
 export default function Pricing() {
   return (

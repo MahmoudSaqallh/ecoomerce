@@ -440,6 +440,13 @@ border-top-left-radius: 100px !important;
   letter-spacing: 2px;
 }
 
+html.lang-ar .splide-slide-texts h2,
+.splide-slide-texts.is-ar h2 {
+  text-transform: none;
+  letter-spacing: 0;
+  font-family: var(--Lufga), "Segoe UI", Tahoma, sans-serif;
+}
+
 .proudect-card .proudect-image {
   height: 100%;
 }
@@ -481,13 +488,12 @@ border-top-left-radius: 100px !important;
 
 .company-shape {
   position: absolute;
-  right: 10%;
-  top: 0;
+  right: 8%;
+  top: -0.5rem;
   padding: 30px;
-  z-index: 1;
+  z-index: 2;
+  pointer-events: none;
 }
-
-
 
 .company-shape img:nth-child(1) {
   background-color: #000;
@@ -496,23 +502,59 @@ border-top-left-radius: 100px !important;
 }
 .company-shape img:nth-child(2) {
   position: absolute;
-    top: 50%;
-    left: 50%;
-  transform: translate(-50% , -50%);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
-
 .company-shape::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(255, 255 , 255 ,0.452);
+  background-color: rgba(255, 255, 255, 0.452);
   border-bottom-left-radius: 100%;
-border-bottom-right-radius: 100%;
-z-index: -1;
+  border-bottom-right-radius: 100%;
+  z-index: -1;
+}
+
+.company-banner-copy {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  text-align: center;
+}
+
+.company-banner-copy h1 {
+  margin-inline: auto;
+  text-align: center !important;
+}
+
+/* Arabic: keep title clear of PARTNER circle on the right */
+html.lang-ar .compaines-banner .company-banner-copy {
+  padding-right: clamp(7rem, 18vw, 14rem);
+  padding-left: 1.5rem;
+}
+
+html.lang-ar .compaines-banner .company-title-ar,
+html.lang-ar .compaines-banner .company-banner-copy h1 {
+  letter-spacing: 0;
+  margin-right: auto;
+  margin-left: auto;
+  padding-right: 0.5rem;
+}
+
+html.lang-ar .compaines-banner .company-shape {
+  right: 3%;
+  left: auto;
+  z-index: 1;
+}
+
+html.lang-ar .compaines-banner .company-banner-copy {
+  z-index: 3;
 }
 
 
@@ -758,4 +800,135 @@ bottom: -41%;
   background: linear-gradient(90deg, #fffaf3 1.69% , rgba(250 , 250 ,243,0)103.98%);
   border-radius: 50% 50% 0 0;
     z-index: -1;
+}
+
+/* ---------- i18n / Arabic RTL layout ---------- */
+html.lang-ar,
+html.lang-ar body {
+  font-family: var(--Lufga), "Segoe UI", Tahoma, "Noto Sans Arabic", Arial, sans-serif;
+}
+
+html.lang-ar .site-i18n {
+  text-align: start;
+  letter-spacing: 0;
+  word-spacing: normal;
+  line-height: 1.7;
+}
+
+html.lang-ar h1,
+html.lang-ar h2,
+html.lang-ar h3,
+html.lang-ar h4,
+html.lang-ar .GolosText,
+html.lang-ar .Lufga {
+  letter-spacing: 0 !important;
+  line-height: 1.55;
+}
+
+html.lang-ar p,
+html.lang-ar label,
+html.lang-ar span,
+html.lang-ar button,
+html.lang-ar a {
+  letter-spacing: 0;
+}
+
+html.lang-ar input,
+html.lang-ar textarea,
+html.lang-ar select {
+  text-align: start;
+  letter-spacing: 0;
+  line-height: 1.6;
+}
+
+/* Flip directional icons in Arabic */
+html.lang-ar .ri-arrow-right-wide-line,
+html.lang-ar .ri-arrow-right-s-line,
+html.lang-ar .i18n-flip {
+  display: inline-block;
+  transform: scaleX(-1);
+}
+
+/* Keep brand logo / phone LTR */
+html.lang-ar .Audiowide,
+html.lang-ar .i18n-ltr {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+/* Navbar */
+html.lang-ar .menu-link {
+  letter-spacing: 0;
+}
+
+html.lang-ar .menu-link a {
+  white-space: nowrap;
+}
+
+html.lang-ar .nav-search-input {
+  text-align: right;
+}
+
+/* Login hero text position */
+html.lang-ar .login-hero-copy {
+  left: auto !important;
+  right: 2.5rem !important;
+  text-align: right;
+}
+
+html.lang-ar .login-image {
+  padding-inline-start: 0;
+  padding-inline-end: 5rem;
+}
+
+/* Footer */
+html.lang-ar footer .GolosText {
+  letter-spacing: 0;
+}
+
+html.lang-ar footer p,
+html.lang-ar footer a,
+html.lang-ar footer li {
+  line-height: 1.8;
+}
+
+/* Product cards */
+html.lang-ar .produect-icon {
+  margin-inline: 0;
+}
+
+/* Hero: mirror padding & text flow in Arabic */
+html.lang-ar .hero-section {
+  padding-inline-start: 8%;
+  padding-inline-end: 8%;
+}
+
+@media (min-width: 1024px) {
+  html.lang-ar .hero-section {
+    padding-inline-start: 10%;
+    padding-inline-end: 16%;
+  }
+}
+
+html.lang-ar .hero-content {
+  text-align: right;
+}
+
+html.lang-ar .hero-image {
+  direction: ltr;
+}
+
+html.lang-ar .hero-image > a {
+  direction: rtl;
+}
+
+/* Breadcrumb / page headers */
+html.lang-ar .page-breadcrumb,
+html.lang-ar .flex.items-center.text-2xl {
+  flex-direction: row;
+}
+
+/* Soft fade when language ready */
+.site-i18n:not(.is-ready) {
+  opacity: 0.98;
 }

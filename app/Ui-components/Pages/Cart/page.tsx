@@ -5,9 +5,10 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import Follower from "../../Index/Follower/Page";
+import Follower from "../../Index/Follower/Follower";
 import retuernPolicy from "@/public/boat.png";
 import packBox from "@/public/pack-box.png";
+import { useLanguage } from "@/app/i18n/LanguageContext";
 
 type CartType = {
   id: string;
@@ -20,6 +21,7 @@ type CartType = {
 
 export default function CartPage() {
   const [cart, setcart] = useState<CartType[]>([]);
+  const { t, dir } = useLanguage();
 
   useEffect(() => {
     import("../../api/session").then(({ getCart }) => {
@@ -31,7 +33,7 @@ export default function CartPage() {
     const updated = cart.filter((item) => item.id !== id);
     setcart(updated);
     import("../../api/session").then(({ setCart }) => setCart(updated));
-    toast.error("Removed From Cart");
+    toast.error(t.cart.removed);
   };
 
   const updateQty = (id: string, change: number): void => {
@@ -55,10 +57,10 @@ export default function CartPage() {
 
   return (
     <>
-      <div className="px-[8%] lg:px-[16%] gap-5 py-10">
+      <div className="px-[8%] lg:px-[16%] gap-5 py-10" dir={dir}>
         {cart.length === 0 ? (
           <p className="text-2xl text-(--second) GolosText border border-gray-400 px-5 py-2 rounded-2xl">
-            Your Cart is Empty
+            {t.cart.empty}
           </p>
         ) : (
           <div className="flex flex-col lg:flex-row gap-5 justify-between">
@@ -126,7 +128,7 @@ export default function CartPage() {
               </div>
             </div>
 
-            <div className="w-full lg:w-1/2 sticky top-25 left-0 h-full">
+            <div className="w-full lg:w-1/2 sticky top-25 start-0 h-full">
               <div className="border rounded-2xl p-4">
                 <button className="btn border w-full border-black cursor-pointer hover:bg-black hover:text-white transition-all duration-300 GolosText text-xl px-6 py-3 rounded-md">
                   Bank Offer 5% Cashback
@@ -168,7 +170,7 @@ export default function CartPage() {
                 </div>
 
                 <div className="flex justify-between items-center gap-3 border-t border-gray-400 my-3 pt-3">
-                  <h2 className="text-xl GolosText">Total</h2>
+                  <h2 className="text-xl GolosText">{t.cart.total}</h2>
                   <h2 className="text-2xl GolosText font-semibold">
                     ${calculateTotal().toFixed(2)}
                   </h2>
@@ -176,7 +178,7 @@ export default function CartPage() {
 
                 <Link href="/checkout">
                   <button className="btn border w-full border-black cursor-pointer hover:bg-black hover:text-white transition-all duration-300 GolosText text-xl px-6 py-3 rounded-md mt-4 bg-black text-white">
-                    Proceed to Checkout
+                    {t.cart.checkout}
                   </button>
                 </Link>
               </div>

@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { SITE_REDIRECTS } from "./app/lib/sitePaths";
 
 const nextConfig: NextConfig = {
   images: {
@@ -28,6 +29,37 @@ const nextConfig: NextConfig = {
         pathname: "/uploads/**",
       },
     ],
+  },
+  async redirects() {
+    return [
+      ...SITE_REDIRECTS,
+      // Extra typo / legacy paths
+      {
+        source: "/Ui-components/Pages/AboutUs",
+        destination: "/Ui-components/Pages/AboutAs",
+        permanent: false,
+      },
+      {
+        source: "/Ui-components/Pages/Register",
+        destination: "/Ui-components/Pages/Regester",
+        permanent: false,
+      },
+      {
+        source: "/Ui-components/Pages/Checkout",
+        destination: "/checkout",
+        permanent: false,
+      },
+      {
+        source: "/Ui-components/Pages/Cheackout",
+        destination: "/checkout",
+        permanent: false,
+      },
+      {
+        source: "/Ui-components/Pages/Wishlist",
+        destination: "/Ui-components/Pages/WishList",
+        permanent: false,
+      },
+    ];
   },
 };
 

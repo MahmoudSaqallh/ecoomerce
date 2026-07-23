@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import menuDot from "@/public/Menu-dot.svg";
 import {
@@ -11,6 +11,8 @@ import {
   getWishlist,
   isAuthenticated,
 } from "../../Ui-components/api/session";
+import { useLanguage } from "@/app/i18n/LanguageContext";
+import LanguageSwitcher from "@/app/components/LanguageSwitcher";
 
 type NavLink = {
   label: string;
@@ -18,50 +20,9 @@ type NavLink = {
   dropdown?: { label: string; href: string }[];
 };
 
-const navLink: NavLink[] = [
-  { label: "Home", href: "/" },
-  {
-    label: "Shop",
-    href: "/Ui-components/shop",
-    dropdown: [
-      { label: "All Products", href: "/Ui-components/shop" },
-      { label: "Sale", href: "/sale" },
-      { label: "Cart", href: "/Ui-components/Pages/Cart" },
-      { label: "Wishlist", href: "/Ui-components/Pages/WishList" },
-    ],
-  },
-  {
-    label: "Blog",
-    href: "/Ui-components/Blogs",
-    dropdown: [
-      { label: "All Posts", href: "/Ui-components/Blogs" },
-    ],
-  },
-  {
-    label: "Pages",
-    href: "/Ui-components/Pages/AboutAs",
-    dropdown: [
-      { label: "About Me", href: "/Ui-components/Pages/AboutAs" },
-      { label: "FAQ", href: "/Ui-components/Pages/Faq" },
-      { label: "Contact Us", href: "/Ui-components/Pages/Contact" },
-      { label: "Track Order", href: "/track-order" },
-      { label: "Complaints", href: "/Ui-components/Pages/Complaints" },
-      { label: "Login", href: "/Ui-components/Pages/Login" },
-      { label: "Registration", href: "/Ui-components/Pages/Regester" },
-    ],
-  },
-  {
-    label: "Complaints",
-    href: "/Ui-components/Pages/Complaints",
-  },
-  {
-    label: "Notifications",
-    href: "/Ui-components/Pages/Notifications",
-  },
-];
-
 export default function BottomNav() {
   const router = useRouter();
+  const { t, dir } = useLanguage();
 
   const [isFixed, setIsFixed] = useState(false);
   const [menu, setMenu] = useState(false);
@@ -71,6 +32,49 @@ export default function BottomNav() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [notifCount, setNotifCount] = useState(0);
   const [countsReady, setCountsReady] = useState(false);
+
+  const navLink: NavLink[] = useMemo(
+    () => [
+      { label: t.nav.home, href: "/" },
+      {
+        label: t.nav.shop,
+        href: "/Ui-components/shop",
+        dropdown: [
+          { label: t.nav.allProducts, href: "/Ui-components/shop" },
+          { label: t.nav.sale, href: "/sale" },
+          { label: t.nav.cart, href: "/Ui-components/Pages/Cart" },
+          { label: t.nav.wishlist, href: "/Ui-components/Pages/WishList" },
+        ],
+      },
+      {
+        label: t.nav.blog,
+        href: "/Ui-components/Blogs",
+        dropdown: [{ label: t.nav.allPosts, href: "/Ui-components/Blogs" }],
+      },
+      {
+        label: t.nav.pages,
+        href: "/Ui-components/Pages/AboutAs",
+        dropdown: [
+          { label: t.nav.aboutMe, href: "/Ui-components/Pages/AboutAs" },
+          { label: t.nav.faq, href: "/Ui-components/Pages/Faq" },
+          { label: t.nav.contactUs, href: "/Ui-components/Pages/Contact" },
+          { label: t.nav.trackOrder, href: "/track-order" },
+          { label: t.nav.complaints, href: "/Ui-components/Pages/Complaints" },
+          { label: t.common.login, href: "/Ui-components/Pages/Login" },
+          { label: t.common.register, href: "/Ui-components/Pages/Regester" },
+        ],
+      },
+      {
+        label: t.nav.complaints,
+        href: "/Ui-components/Pages/Complaints",
+      },
+      {
+        label: t.nav.notifications,
+        href: "/Ui-components/Pages/Notifications",
+      },
+    ],
+    [t]
+  );
 
   const updateCounts = () => {
     if (!isAuthenticated()) {
@@ -93,7 +97,8 @@ export default function BottomNav() {
       );
       const data = await fetchNotifications();
       const unread = (data.notifications || []).filter(
-        (n) => !n.read && n.type !== "account"
+        (n: { read?: boolean; type?: string }) =>
+          !n.read && n.type !== "account"
       ).length;
       setNotifCount(unread);
     } catch {
@@ -139,31 +144,21 @@ export default function BottomNav() {
   }, []);
 
   useEffect(() => {
-
     const handleScroll = () => setIsFixed(window.scrollY > 50);
-
     window.addEventListener("scroll", handleScroll);
-
     return () => window.removeEventListener("scroll", handleScroll);
-
   }, []);
 
   const toggleDropdown = (label: string) => {
-
     setOpenDropdown((prev) => ({
-      ...Object.fromEntries(
-        Object.keys(prev).map((key) => [key, false])
-      ),
+      ...Object.fromEntries(Object.keys(prev).map((key) => [key, false])),
       [label]: !prev[label],
     }));
-
   };
 
   const toggleMenu = () => {
-
     setMenu((prev) => !prev);
     setOpenDropdown({});
-
   };
 
   function logout() {
@@ -180,13 +175,11 @@ export default function BottomNav() {
   return (
     <div
       className={`w-full bg-white shadow-sm transition-all py-5 duration-500 ${
-        isFixed ? "fixed top-0 left-0 z-50" : ""
+        isFixed ? "fixed top-0 inset-x-0 z-50" : ""
       }`}
+      dir={dir}
     >
-
-      <div className="w-full flex items-center justify-between px-[8%] lg:px-[16%] text-gray-700">
-
-        {/* Mobile logo — hidden when navbar sticks on scroll */}
+      <div className="w-full flex items-center justify-between px-[8%] lg:px-[16%] text-gray-700 gap-3">
         <Link
           href="/"
           className={`text-4xl font-bold Audiowide text-black lg:hidden transition-all duration-300 ${
@@ -198,176 +191,167 @@ export default function BottomNav() {
           Fashi<span className="text-(--second)"> Que</span>
         </Link>
 
-        {/* DESKTOP NAV */}
-        <nav className="menu-link hidden lg:flex space-x-6 relative z-40">
-
+        <nav className="menu-link hidden lg:flex gap-6 relative z-40">
           {navLink.map((link) =>
             link.dropdown ? (
-
               <div key={link.label} className="relative group">
-
                 <Link
                   href={link.href}
                   className="flex GolosText items-center gap-1"
                 >
                   {link.label}
-
-                  <Image src={menuDot} alt="menuDot" />
+                  <Image src={menuDot} alt="" />
                 </Link>
-
-                {/* DROPDOWN */}
-                <div className="absolute bg-white left-0 top-full hidden group-hover:block shadow-xl p-2 border border-gray-100 rounded-lg min-w-[170px]">
-
+                <div className="absolute bg-white top-full start-0 hidden group-hover:block shadow-xl p-2 border border-gray-100 rounded-lg min-w-[170px] z-50">
                   {link.dropdown.map((item) => (
-
                     <Link
                       key={item.label}
                       href={item.href}
                       className="block px-4 py-2 rounded-md transition-all hover:bg-gray-50"
                     >
-
                       <div className="flex gap-2 items-center">
-
-                        <Image src={menuDot} alt="menuDot" />
-
+                        <Image src={menuDot} alt="" />
                         {item.label}
-
                       </div>
-
                     </Link>
-
                   ))}
-
                 </div>
-
               </div>
-
             ) : (
-
               <Link
                 key={link.label}
                 href={link.href}
                 className="flex GolosText items-center gap-2"
               >
                 {link.label}
-
-                <Image src={menuDot} alt="menuDot" />
+                <Image src={menuDot} alt="" />
               </Link>
-
             )
           )}
-
         </nav>
 
-        {/* RIGHT SIDE */}
-        <div className="flex items-center gap-5">
+        <div className="flex items-center gap-4 sm:gap-5">
+          <div className="lg:hidden">
+            <LanguageSwitcher />
+          </div>
 
-          {/* LOGIN / LOGOUT */}
           {isLoggedIn ? (
             <button
               onClick={logout}
               className="login-link border-b border-gray-400 GolosText font-semibold hidden lg:block cursor-pointer"
             >
-              Logout
+              {t.common.logout}
             </button>
           ) : (
             <Link
               href="/Ui-components/Pages/Login"
               className="login-link border-b border-gray-400 GolosText font-semibold hidden lg:block"
             >
-              Login / Register
+              {t.common.loginRegister}
             </Link>
           )}
 
-          {/* ICONS */}
           <div className="flex items-center gap-6">
-
             {isLoggedIn ? (
               <Link
                 href="/Ui-components/Pages/Account"
                 className="relative"
-                title="My Account"
-                aria-label="My Account"
+                title={t.nav.myAccount}
+                aria-label={t.nav.myAccount}
               >
                 <i className="bi bi-person text-3xl"></i>
               </Link>
             ) : null}
 
             <Link
-              href="/Ui-components/Pages/Notifications"
+              href={
+                isLoggedIn
+                  ? "/Ui-components/Pages/Notifications"
+                  : "/Ui-components/Pages/Login?next=/Ui-components/Pages/Notifications"
+              }
               className="relative"
-              title="Notifications"
+              title={t.nav.notifications}
+              onClick={(e) => {
+                if (!isLoggedIn) {
+                  e.preventDefault();
+                  router.push(
+                    "/Ui-components/Pages/Login?next=/Ui-components/Pages/Notifications"
+                  );
+                }
+              }}
             >
               <i className="bi bi-bell text-3xl"></i>
-
               {countsReady && notifCount > 0 && (
-                <span className="absolute -top-2 left-3 bg-(--second) text-white text-sm w-5 h-5 flex justify-center items-center rounded-full">
+                <span className="absolute -top-2 -end-1 bg-(--second) text-white text-sm min-w-5 h-5 px-1 flex justify-center items-center rounded-full">
                   {notifCount > 9 ? "9+" : notifCount}
                 </span>
               )}
             </Link>
 
             <Link
-              href="/Ui-components/Pages/WishList"
+              href={
+                isLoggedIn
+                  ? "/Ui-components/Pages/WishList"
+                  : "/Ui-components/Pages/Login?next=/Ui-components/Pages/WishList"
+              }
               className="relative"
+              onClick={(e) => {
+                if (!isLoggedIn) {
+                  e.preventDefault();
+                  router.push(
+                    "/Ui-components/Pages/Login?next=/Ui-components/Pages/WishList"
+                  );
+                }
+              }}
             >
               <i className="bi bi-balloon-heart text-3xl"></i>
-
               {countsReady && wishlistCount > 0 && (
-                <span className="absolute -top-2 left-3 bg-black text-white text-sm w-5 h-5 flex justify-center items-center rounded-full">
+                <span className="absolute -top-2 -end-1 bg-black text-white text-sm min-w-5 h-5 px-1 flex justify-center items-center rounded-full">
                   {wishlistCount}
                 </span>
               )}
-
             </Link>
 
             <Link
-              href="/Ui-components/Pages/Cart"
+              href={
+                isLoggedIn
+                  ? "/Ui-components/Pages/Cart"
+                  : "/Ui-components/Pages/Login?next=/Ui-components/Pages/Cart"
+              }
               className="relative"
+              onClick={(e) => {
+                if (!isLoggedIn) {
+                  e.preventDefault();
+                  router.push(
+                    "/Ui-components/Pages/Login?next=/Ui-components/Pages/Cart"
+                  );
+                }
+              }}
             >
-
               <i className="bi bi-cart3 text-3xl"></i>
-
               {countsReady && countCart > 0 && (
-                <span className="absolute -top-2 left-3 bg-black text-white text-sm w-5 h-5 flex justify-center items-center rounded-full">
+                <span className="absolute -top-2 -end-1 bg-black text-white text-sm min-w-5 h-5 px-1 flex justify-center items-center rounded-full">
                   {countCart}
                 </span>
               )}
-
             </Link>
-
           </div>
 
-          {/* MOBILE MENU */}
-          <div className="flex items-center gap-4">
-
-            <button
-              onClick={toggleMenu}
-              className="text-2xl focus:outline-none"
-            >
-              <i className="ri-menu-line lg:hidden flex items-center gap-4 cursor-pointer"></i>
-            </button>
-
-          </div>
-
+          <button
+            onClick={toggleMenu}
+            className="text-2xl focus:outline-none lg:hidden cursor-pointer"
+            aria-label="Menu"
+          >
+            <i className="ri-menu-line"></i>
+          </button>
         </div>
-
       </div>
 
-      {/* MOBILE MENU */}
       {menu && (
-
         <div className="lg:hidden bg-white border-t border-gray-200 mt-3 transition-all duration-500">
-
           {navLink.map((link) => (
-
-            <div
-              key={link.label}
-              className="border-b border-gray-100"
-            >
-
+            <div key={link.label} className="border-b border-gray-100">
               {!link.dropdown && (
-
                 <Link
                   href={link.href}
                   className="block px-6 py-3 text-gray-700"
@@ -375,35 +359,27 @@ export default function BottomNav() {
                 >
                   {link.label}
                 </Link>
-
               )}
 
               {link.dropdown && (
                 <>
                   <button
                     onClick={() => toggleDropdown(link.label)}
-                    className="w-full flex justify-between items-center px-6 py-3 text-gray-700"
+                    className="w-full flex justify-between items-center px-6 py-3 text-gray-700 cursor-pointer"
                   >
                     {link.label}
-
                     <span
                       className={`transition-transform ${
-                        openDropdown[link.label]
-                          ? "rotate-180"
-                          : ""
+                        openDropdown[link.label] ? "rotate-180" : ""
                       }`}
                     >
-                      <i className="ri-arrow-down-s-line transition-transform"></i>
+                      <i className="ri-arrow-down-s-line"></i>
                     </span>
-
                   </button>
 
                   {openDropdown[link.label] && (
-
-                    <div className="pl-8 pb-2">
-
+                    <div className="ps-8 pb-2">
                       {link.dropdown.map((item) => (
-
                         <Link
                           key={item.label}
                           href={item.href}
@@ -412,18 +388,12 @@ export default function BottomNav() {
                         >
                           {item.label}
                         </Link>
-
                       ))}
-
                     </div>
-
                   )}
-
                 </>
               )}
-
             </div>
-
           ))}
 
           <div className="border-b border-gray-100 px-6 py-3 space-y-2">
@@ -434,14 +404,14 @@ export default function BottomNav() {
                   className="block text-gray-700"
                   onClick={() => setMenu(false)}
                 >
-                  My Account
+                  {t.nav.myAccount}
                 </Link>
                 <button
                   type="button"
-                  className="block text-left text-(--second) font-semibold"
+                  className="block text-start text-(--second) font-semibold cursor-pointer"
                   onClick={logout}
                 >
-                  Logout
+                  {t.common.logout}
                 </button>
               </>
             ) : (
@@ -450,15 +420,12 @@ export default function BottomNav() {
                 className="block text-gray-700"
                 onClick={() => setMenu(false)}
               >
-                Login / Register
+                {t.common.loginRegister}
               </Link>
             )}
           </div>
-
         </div>
-
       )}
-
     </div>
   );
 }

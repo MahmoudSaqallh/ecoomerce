@@ -1,41 +1,47 @@
 "use client";
 
 import Link from "next/link";
-
-const columns = [
-  {
-    title: "Shop",
-    links: [
-      { label: "All products", href: "/Ui-components/shop" },
-      { label: "Wishlist", href: "/Ui-components/Pages/WishList" },
-      { label: "Cart", href: "/Ui-components/Pages/Cart" },
-      { label: "My Account", href: "/Ui-components/Pages/Account" },
-    ],
-  },
-  {
-    title: "Customer Care",
-    links: [
-      { label: "Contact", href: "/Ui-components/Pages/Contact" },
-      { label: "Shipping", href: "/Ui-components/Pages/Shipping" },
-      { label: "Returns", href: "/Ui-components/Pages/Returns" },
-      { label: "FAQ", href: "/Ui-components/Pages/Faq" },
-      { label: "Complaints", href: "/Ui-components/Pages/Complaints" },
-    ],
-  },
-  {
-    title: "About",
-    links: [
-      { label: "Our Story", href: "/Ui-components/Pages/AboutAs" },
-      { label: "Blog", href: "/Ui-components/Blogs" },
-      { label: "Privacy Policy", href: "/Ui-components/Pages/Privacy" },
-      { label: "Terms", href: "/Ui-components/Pages/Terms" },
-    ],
-  },
-];
+import { useLanguage } from "@/app/i18n/LanguageContext";
 
 export default function Footer() {
+  const { t, dir } = useLanguage();
+
+  const columns = [
+    {
+      title: t.footer.shop,
+      links: [
+        { label: t.footer.allProducts, href: "/Ui-components/shop" },
+        { label: t.footer.wishlist, href: "/Ui-components/Pages/WishList" },
+        { label: t.footer.cart, href: "/Ui-components/Pages/Cart" },
+        { label: t.footer.myAccount, href: "/Ui-components/Pages/Account" },
+      ],
+    },
+    {
+      title: t.footer.customerCare,
+      links: [
+        { label: t.footer.contact, href: "/Ui-components/Pages/Contact" },
+        { label: t.footer.shipping, href: "/Ui-components/Pages/Shipping" },
+        { label: t.footer.returns, href: "/Ui-components/Pages/Returns" },
+        { label: t.footer.faq, href: "/Ui-components/Pages/Faq" },
+        {
+          label: t.footer.complaints,
+          href: "/Ui-components/Pages/Complaints",
+        },
+      ],
+    },
+    {
+      title: t.footer.about,
+      links: [
+        { label: t.footer.ourStory, href: "/Ui-components/Pages/AboutAs" },
+        { label: t.footer.blog, href: "/Ui-components/Blogs" },
+        { label: t.footer.privacy, href: "/Ui-components/Pages/Privacy" },
+        { label: t.footer.terms, href: "/Ui-components/Pages/Terms" },
+      ],
+    },
+  ];
+
   return (
-    <footer className="px-[8%] lg:px-[16%] pt-20">
+    <footer className="px-[8%] lg:px-[16%] pt-20" dir={dir}>
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-10 pb-10 border-b">
         <div className="lg:col-span-1">
           <Link
@@ -46,9 +52,9 @@ export default function Footer() {
           </Link>
 
           <div className="mt-6 space-y-3">
-            <p className="GolosText">Address: 451 Wall Street, UK</p>
-            <p className="GolosText">E-mail: hello@fashique.com</p>
-            <p className="GolosText">Phone: +123 456 789</p>
+            <p className="GolosText">{t.footer.address}</p>
+            <p className="GolosText">{t.footer.email}</p>
+            <p className="GolosText" dir="ltr">{t.footer.phone}</p>
           </div>
         </div>
 
@@ -78,7 +84,7 @@ export default function Footer() {
 
       <div className="py-6 text-center">
         <p className="GolosText text-sm text-black/70">
-          © {new Date().getFullYear()} FashiQue. All rights reserved.
+          © {new Date().getFullYear()} {t.footer.rights}
         </p>
       </div>
     </footer>

@@ -1,27 +1,24 @@
-import React from 'react'
-import Hero from './Hero/Page'
-import Category from './Catogery/Page'
-import Trending from './Trading/page'
-import Banner from './Banner/Page'
-import PoplouerProudect from './PoplouerProudect/Page'
-import Company from './Company/Page'
-import Blogs from './Blogs/Page'
-import Follower from './Follower/Page'
-
+import React from "react";
+import Hero from "./Hero/Hero";
+import Category from "./Catogery/Category";
+import Trending from "./Trading/Trending";
+import Banner from "./Banner/Banner";
+import PoplouerProudect from "./PoplouerProudect/PopularProducts";
+import Company from "./Company/Company";
+import Blogs from "./Blogs/HomeBlogs";
+import Follower from "./Follower/Follower";
 
 export default function Index() {
   return (
-      <>
-      <Hero/>
-      <Category/>
-      <Trending/>
-      <Banner/>
-      <PoplouerProudect/>
-      <Company/>
-      <Blogs/>
-      <Follower/>
-
-
-      </>
-  )
+    <>
+      <Hero />
+      <Category />
+      <Trending />
+      <Banner />
+      <PoplouerProudect />
+      <Company />
+      <Blogs />
+      <Follower />
+    </>
+  );
 }

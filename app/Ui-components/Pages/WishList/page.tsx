@@ -4,7 +4,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import Follower from "../../Index/Follower/Page";
+import Follower from "../../Index/Follower/Follower";
 
 type ProductType = {
   id: string;
@@ -34,23 +34,32 @@ export default function Wishlist() {
   };
 
   const addtocart = (product: ProductType): void => {
-    import("../../api/session").then(({ getCart, setCart }) => {
-      const cart = getCart();
-      const existi = cart.find((item: { id: string }) => item.id === product.id);
+    import("../../api/session").then(
+      ({ getCart, setCart, requireLoginForAction, redirectToLogin }) => {
+        if (!requireLoginForAction()) {
+          toast.info("Please login to add to cart");
+          redirectToLogin("/Ui-components/Pages/WishList");
+          return;
+        }
+        const cart = getCart();
+        const existi = cart.find(
+          (item: { id: string }) => item.id === product.id
+        );
 
-      if (existi) {
-        toast.info("Already in cart");
-        return;
+        if (existi) {
+          toast.info("Already in cart");
+          return;
+        }
+
+        cart.push({
+          ...product,
+          qty: 1,
+        });
+
+        setCart(cart);
+        toast.success("Add to cart");
       }
-
-      cart.push({
-        ...product,
-        qty: 1,
-      });
-
-      setCart(cart);
-      toast.success("Add to cart");
-    });
+    );
   };
 
   return (

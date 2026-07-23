@@ -7,13 +7,20 @@ import {
   syncAuthCookie,
 } from "../../Ui-components/api/session";
 
-const PUBLIC_ROUTES = [
-  "/Ui-components/Pages/Login",
-  "/Ui-components/Pages/Regester",
+/** Only these need login. Home, Shop, product details stay public. */
+const PROTECTED_ROUTES = [
+  "/Ui-components/Pages/Cart",
+  "/Ui-components/Pages/WishList",
+  "/Ui-components/Pages/Payment",
+  "/Ui-components/Pages/Cheackout",
+  "/Ui-components/Pages/Account",
+  "/Ui-components/Pages/Notifications",
+  "/Ui-components/Pages/Complaints",
+  "/checkout",
 ];
 
-function isPublicRoute(pathname: string) {
-  return PUBLIC_ROUTES.some(
+function isProtectedRoute(pathname: string) {
+  return PROTECTED_ROUTES.some(
     (p) => pathname === p || pathname.startsWith(`${p}/`)
   );
 }
@@ -25,24 +32,24 @@ export default function AuthGuard({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const publicPage = isPublicRoute(pathname);
-  const [allowed, setAllowed] = useState(false);
+  const protectedPage = isProtectedRoute(pathname);
+  const [allowed, setAllowed] = useState(!protectedPage);
 
   useEffect(() => {
     const check = () => {
       const loggedIn = isAuthenticated();
       syncAuthCookie();
 
-      if (publicPage) {
-        // Already logged in? send to home (or ?next=)
-        if (loggedIn && pathname.includes("/Login")) {
-          const params = new URLSearchParams(window.location.search);
-          const raw = params.get("next") || "/";
-          const next =
-            raw.startsWith("/") && !raw.startsWith("//") ? raw : "/";
-          router.replace(next);
-          return;
-        }
+      if (pathname.includes("/Pages/Login") && loggedIn) {
+        const params = new URLSearchParams(window.location.search);
+        const raw = params.get("next") || "/";
+        const next =
+          raw.startsWith("/") && !raw.startsWith("//") ? raw : "/";
+        router.replace(next);
+        return;
+      }
+
+      if (!protectedPage) {
         setAllowed(true);
         return;
       }
@@ -66,7 +73,7 @@ export default function AuthGuard({
       window.removeEventListener("fashique-auth-change", check);
       window.removeEventListener("storage", check);
     };
-  }, [pathname, router, publicPage]);
+  }, [pathname, router, protectedPage]);
 
   if (!allowed) {
     return (
@@ -74,7 +81,7 @@ export default function AuthGuard({
         <div className="flex flex-col items-center gap-4">
           <div className="h-10 w-10 rounded-full border-4 border-black/10 border-t-black animate-spin" />
           <p className="text-lg font-medium text-gray-700">
-            {publicPage ? "Loading..." : "Redirecting to login..."}
+            Redirecting to login...
           </p>
         </div>
       </div>

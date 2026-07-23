@@ -188,7 +188,7 @@ export default function AccountPage() {
                             : ""}
                         </p>
                       </div>
-                      <div className="text-right">
+                      <div className="text-end">
                         <p className="font-semibold">
                           ${Number(o.totalAmount || 0).toFixed(2)}
                         </p>

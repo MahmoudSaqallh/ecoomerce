@@ -5,6 +5,7 @@ import "react-toastify/dist/ReactToastify.css";
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+import { useLanguage } from "@/app/i18n/LanguageContext";
 
 type ApiProduct = {
   id: string;
@@ -17,6 +18,7 @@ type ApiProduct = {
 export default function PoplouerProudect() {
   const ContainerRef = useRef(null);
   const [products, setProducts] = useState<ApiProduct[]>([]);
+  const { t, dir } = useLanguage();
 
   useEffect(() => {
     async function load() {
@@ -44,57 +46,71 @@ export default function PoplouerProudect() {
   }, [products]);
 
   const addwishlist = (proudect: ApiProduct) => {
-    import("../../api/session").then(({ getWishlist, setWishlist }) => {
-      const wishlist = getWishlist();
-      if (wishlist.find((item: { id: string }) => item.id === proudect.id)) {
-        toast.info("Already in Wishlist");
-        return;
+    import("../../api/session").then(
+      ({ getWishlist, setWishlist, requireLoginForAction, redirectToLogin }) => {
+        if (!requireLoginForAction()) {
+          toast.info(t.common.pleaseLoginWishlist);
+          redirectToLogin("/");
+          return;
+        }
+        const wishlist = getWishlist();
+        if (wishlist.find((item: { id: string }) => item.id === proudect.id)) {
+          toast.info(t.common.alreadyInWishlist);
+          return;
+        }
+        wishlist.push({
+          id: proudect.id,
+          title: proudect.name,
+          price: `$${proudect.price}`,
+          image: proudect.imageUrl,
+        });
+        setWishlist(wishlist);
+        toast.success(t.common.addedToWishlist);
       }
-      wishlist.push({
-        id: proudect.id,
-        title: proudect.name,
-        price: `$${proudect.price}`,
-        image: proudect.imageUrl,
-      });
-      setWishlist(wishlist);
-      toast.success("Add to Whishlist");
-    });
+    );
   };
 
   const addtocart = (proudect: ApiProduct) => {
-    import("../../api/session").then(({ getCart, setCart }) => {
-      const cart = getCart();
-      if (cart.find((item: { id: string }) => item.id === proudect.id)) {
-        toast.info("Already in cart");
-        return;
+    import("../../api/session").then(
+      ({ getCart, setCart, requireLoginForAction, redirectToLogin }) => {
+        if (!requireLoginForAction()) {
+          toast.info(t.common.pleaseLoginCart);
+          redirectToLogin("/");
+          return;
+        }
+        const cart = getCart();
+        if (cart.find((item: { id: string }) => item.id === proudect.id)) {
+          toast.info(t.common.alreadyInCart);
+          return;
+        }
+        cart.push({
+          id: proudect.id,
+          title: proudect.name,
+          price: `$${proudect.price}`,
+          image: proudect.imageUrl,
+          qty: 1,
+        });
+        setCart(cart);
+        toast.success(t.common.addedToCart);
       }
-      cart.push({
-        id: proudect.id,
-        title: proudect.name,
-        price: `$${proudect.price}`,
-        image: proudect.imageUrl,
-        qty: 1,
-      });
-      setCart(cart);
-      toast.success("Add to cart");
-    });
+    );
   };
 
   return (
     <>
-      <div className="px-[14%] lg-px-[16%] py-20 mt-20">
+      <div className="px-[14%] lg-px-[16%] py-20 mt-20" dir={dir}>
         <div className="flex flex-col md:flex-row justify-between items-center gap-5">
-          <div>
-            <h2 className="text-5xl font-medium Lufga">Most Popular Products</h2>
+          <div className="text-center md:text-start">
+            <h2 className="text-5xl font-medium Lufga">{t.home.popularTitle}</h2>
             <p className="GolosText text-lg mt-1">
-              Discover the most trending products in FashiQue.
+              {t.home.popularSubtitle}
             </p>
           </div>
           <Link
             href="/Ui-components/shop"
             className="btn bg-black text-white cursor-pointer GolosText text-xl px-6 py-3 rounded-md transition-all duration-300"
           >
-            View all
+            {t.nav.allProducts}
           </Link>
         </div>
 
@@ -124,11 +140,11 @@ export default function PoplouerProudect() {
                       </div>
                     </div>
                     <div className="mt-4 space-y-1">
-                      <h3 className="GolosText text-lg md:text-xl font-bold text-black line-clamp-1 tracking-tight">
+                      <h3 className="GolosText text-lg md:text-xl font-bold text-black line-clamp-1">
                         {item.name}
                       </h3>
                       <div className="flex items-center justify-between gap-3">
-                        <p className="Lufga text-base md:text-lg font-semibold text-(--second)">
+                        <p className="Lufga text-base md:text-lg font-semibold text-(--second) i18n-ltr" dir="ltr">
                           ${item.price}
                         </p>
                         <span className="Lufga text-sm text-gray-500 underline underline-offset-4 group-hover:text-black transition-colors">

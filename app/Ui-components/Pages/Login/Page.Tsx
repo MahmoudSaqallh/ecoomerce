@@ -9,6 +9,8 @@ import toast, { Toaster } from "react-hot-toast";
 
 import loginImg from "@/public/login-img.webp";
 import { customerLogin } from "../../api/auth";
+import { useLanguage } from "@/app/i18n/LanguageContext";
+import LanguageSwitcher from "@/app/components/LanguageSwitcher";
 
 const loginSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters"),
@@ -17,6 +19,7 @@ const loginSchema = z.object({
 
 export default function Login() {
   const router = useRouter();
+  const { t, dir } = useLanguage();
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -35,7 +38,15 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const data = await customerLogin(username.trim(), password);
+      const data = (await customerLogin(username.trim(), password)) as {
+        token?: string;
+        customer?: {
+          id?: string | number;
+          name?: string;
+          email?: string;
+          phone?: string;
+        };
+      };
 
       const { setLoggedUser } = await import("../../api/session");
 
@@ -49,7 +60,7 @@ export default function Login() {
         data.token
       );
 
-      toast.success("Login successful");
+      toast.success(t.login.success);
 
       const params =
         typeof window !== "undefined"
@@ -61,7 +72,7 @@ export default function Login() {
 
       router.replace(next);
     } catch (error: unknown) {
-      toast.error(error instanceof Error ? error.message : "Login failed");
+      toast.error(error instanceof Error ? error.message : t.login.failed);
     } finally {
       setLoading(false);
     }
@@ -79,7 +90,7 @@ export default function Login() {
           </h1>
 
           <p className="mt-4 text-gray-600 GolosText">
-            Preparing your experience...
+            {t.common.loading}
           </p>
 
           <div className="flex gap-3 mt-8">
@@ -98,20 +109,23 @@ export default function Login() {
 
   return (
     <>
-      <div>
+      <div dir={dir}>
+        <div className="absolute top-4 end-4 z-20">
+          <LanguageSwitcher />
+        </div>
         <div className="flex flex-col lg:flex-row">
           <div className="w-full lg:w-1/2 hidden lg:block bg-[#ffedd4]">
-            <div className="absolute top-30 lg:top-50 left-10 z-10">
+            <div className="absolute top-30 lg:top-50 start-10 z-10 login-hero-copy">
               <h2 className="text-black text-4xl GolosText font-semibold">
-                Login
+                {t.common.login}
               </h2>
 
               <div className="flex mt-5 text-2xl items-center text-black">
                 <span className="font-semibold text-(--second)">FashiQue</span>
 
-                <i className="ri-arrow-right-wide-line pt-2 px-2"></i>
+                <i className="ri-arrow-right-wide-line pt-2 px-2 i18n-flip"></i>
 
-                <span>Login</span>
+                <span>{t.common.login}</span>
               </div>
             </div>
 
@@ -124,61 +138,54 @@ export default function Login() {
             <div className="flex items-center justify-center px-[8%] lg:px-[16%] py-15 min-h-screen">
               <div className="border w-[90%] max-w-xl p-10 border-black rounded-2xl">
                 <h2 className="text-3xl Lufga font-bold text-center mb-3">
-                  Login
+                  {t.common.login}
                 </h2>
 
                 <p className="text-gray-500 text-center mb-6">
-                  welcome please login to your account
+                  {t.login.welcome}
                 </p>
 
                 <form onSubmit={handleLogin}>
                   <div className="space-y-5">
                     <div>
-                      <label className="Lufga">Username or Email</label>
+                      <label className="Lufga">{t.login.username}</label>
 
                       <input
                         type="text"
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
                         className="w-full px-4 py-3 border border-black bg-white hover:border-(--second) rounded-lg focus:outline-none"
-                        placeholder="Enter Username or Email"
+                        placeholder={t.login.username}
                       />
                     </div>
 
                     <div>
-                      <label className="Lufga">Password</label>
+                      <label className="Lufga">{t.login.password}</label>
 
                       <input
                         type="password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         className="w-full px-4 py-3 border border-black bg-white hover:border-(--second) rounded-lg focus:outline-none"
-                        placeholder="Enter Password"
+                        placeholder={t.login.password}
                       />
                     </div>
                   </div>
 
-                  <div className="flex justify-between mb-8">
-                    <label className="flex items-center gap-1 cursor-pointer mt-5">
-                      <input type="checkbox" className="mt-1" />
-                      <span className="text-gray-400">Remember me</span>
-                    </label>
-                  </div>
-
-                  <div className="flex items-center justify-center gap-2 mt-5">
+                  <div className="flex items-center justify-center gap-2 mt-8">
                     <button
                       type="submit"
                       disabled={loading}
                       className="btn bg-black text-white cursor-pointer GolosText px-4 py-2 rounded-md transition-all duration-300 disabled:opacity-60"
                     >
-                      SIGN IN
+                      {t.login.signIn}
                     </button>
 
                     <Link
                       href="/Ui-components/Pages/Regester"
                       className="btn bg-black text-white cursor-pointer GolosText px-4 py-2 rounded-md transition-all duration-300"
                     >
-                      Register
+                      {t.common.register}
                     </Link>
                   </div>
                 </form>

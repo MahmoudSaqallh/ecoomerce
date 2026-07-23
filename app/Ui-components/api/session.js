@@ -24,6 +24,22 @@ export function isAuthenticated() {
   return !!(user?.email && token);
 }
 
+/**
+ * Returns true if the user may perform cart/wishlist actions.
+ * Does not redirect — callers show a toast then call redirectToLogin().
+ */
+export function requireLoginForAction() {
+  return isAuthenticated();
+}
+
+export function redirectToLogin(nextPath) {
+  if (typeof window === "undefined") return;
+  const next = encodeURIComponent(
+    nextPath || window.location.pathname || "/"
+  );
+  window.location.assign(`/Ui-components/Pages/Login?next=${next}`);
+}
+
 function setAuthCookie(on) {
   if (typeof document === "undefined") return;
   document.cookie = on

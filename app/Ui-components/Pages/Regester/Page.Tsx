@@ -9,20 +9,24 @@ import toast, { Toaster } from "react-hot-toast";
 
 import loginImg from "@/public/login-img.webp";
 import { registerCustomer } from "../../api/auth";
-
-const registerSchema = z.object({
-  username: z.string().min(3, "Username must be at least 3 characters"),
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-});
+import { useLanguage } from "@/app/i18n/LanguageContext";
+import LanguageSwitcher from "@/app/components/LanguageSwitcher";
 
 export default function Regester() {
   const router = useRouter();
+  const { t, dir } = useLanguage();
+  const r = t.pages.register;
 
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const registerSchema = z.object({
+    username: z.string().min(3, r.userMin),
+    email: z.string().email(r.emailInvalid),
+    password: z.string().min(6, r.passMin),
+  });
 
   async function handleRegister(e: React.FormEvent) {
     e.preventDefault();
@@ -40,7 +44,20 @@ export default function Regester() {
 
     setLoading(true);
     try {
-      const data = await registerCustomer({ username, email, password });
+      const data = (await registerCustomer({
+        username,
+        email,
+        password,
+        phone: "",
+      })) as {
+        token?: string;
+        customer?: {
+          id?: string | number;
+          name?: string;
+          email?: string;
+          phone?: string;
+        };
+      };
       const { setLoggedUser } = await import("../../api/session");
       setLoggedUser(
         {
@@ -51,12 +68,10 @@ export default function Regester() {
         },
         data.token
       );
-      toast.success("Account created — welcome!");
+      toast.success(r.success);
       router.replace("/");
     } catch (error: unknown) {
-      toast.error(
-        error instanceof Error ? error.message : "Registration failed"
-      );
+      toast.error(error instanceof Error ? error.message : r.failed);
     } finally {
       setLoading(false);
     }
@@ -64,12 +79,15 @@ export default function Regester() {
 
   return (
     <>
-      <div>
+      <div dir={dir}>
+        <div className="absolute top-4 end-4 z-20">
+          <LanguageSwitcher />
+        </div>
         <div className="flex flex-col lg:flex-row">
           <div className="w-full lg:w-1/2 hidden lg:block bg-[#ffedd4]">
-            <div className="absolute top-30 lg:top-50 left-10 z-10">
+            <div className="absolute top-30 lg:top-50 start-10 z-10">
               <h2 className="text-black text-4xl GolosText font-semibold">
-                Registration
+                {r.title}
               </h2>
 
               <div className="flex mt-5 text-2xl items-center text-black">
@@ -77,12 +95,12 @@ export default function Regester() {
                   href="/Ui-components/Pages/Login"
                   className="font-semibold hover:text-(--second) transition-all duration-300"
                 >
-                  Home
+                  {r.home}
                 </Link>
 
-                <i className="ri-arrow-right-wide-line pt-2 px-2"></i>
+                <i className="ri-arrow-right-wide-line pt-2 px-2 i18n-flip"></i>
 
-                <span>Registration</span>
+                <span>{r.title}</span>
               </div>
             </div>
 
@@ -95,45 +113,45 @@ export default function Regester() {
             <div className="flex items-center justify-center px-[8%] lg:px-[16%] py-15 min-h-screen">
               <div className="border w-[90%] max-w-xl p-10 border-black rounded-2xl">
                 <h2 className="text-3xl Lufga font-bold text-center mb-3">
-                  Create Account
+                  {r.createAccount}
                 </h2>
 
                 <p className="text-gray-500 text-center mb-6">
-                  Join FashiQue and start shopping
+                  {r.joinHint}
                 </p>
 
                 <form onSubmit={handleRegister}>
                   <div className="space-y-5">
                     <div>
-                      <label className="Lufga">Username</label>
+                      <label className="Lufga">{r.username}</label>
                       <input
                         type="text"
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
                         className="w-full px-4 py-3 border border-black bg-white hover:border-(--second) rounded-lg focus:outline-none"
-                        placeholder="Enter Username"
+                        placeholder={r.usernamePh}
                       />
                     </div>
 
                     <div>
-                      <label className="Lufga">Email</label>
+                      <label className="Lufga">{r.email}</label>
                       <input
                         type="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         className="w-full px-4 py-3 border border-black bg-white hover:border-(--second) rounded-lg focus:outline-none"
-                        placeholder="Enter Email"
+                        placeholder={r.emailPh}
                       />
                     </div>
 
                     <div>
-                      <label className="Lufga">Password</label>
+                      <label className="Lufga">{r.password}</label>
                       <input
                         type="password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         className="w-full px-4 py-3 border border-black bg-white hover:border-(--second) rounded-lg focus:outline-none"
-                        placeholder="Enter Password"
+                        placeholder={r.passwordPh}
                       />
                     </div>
                   </div>
@@ -144,14 +162,14 @@ export default function Regester() {
                       disabled={loading}
                       className="btn bg-black text-white cursor-pointer GolosText px-4 py-2 rounded-md transition-all duration-300 disabled:opacity-60"
                     >
-                      {loading ? "Creating..." : "REGISTER"}
+                      {loading ? r.creating : r.registerBtn}
                     </button>
 
                     <Link
                       href="/Ui-components/Pages/Login"
                       className="btn bg-black text-white cursor-pointer GolosText px-4 py-2 rounded-md transition-all duration-300"
                     >
-                      Login
+                      {t.common.login}
                     </Link>
                   </div>
                 </form>

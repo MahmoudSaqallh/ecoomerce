@@ -6,7 +6,7 @@ import voucher3 from "@/public/Voucher-3.webp"
 import voucher4 from "@/public/Voucher-4.webp"
 import voucher5 from "@/public/Voucher-4.webp"
 import voucher6 from "@/public/Voucher-1.webp"
-import Follower from '../../Index/Follower/Page';
+import Follower from '../../Index/Follower/Follower';
 
 
 const voucherdata = [

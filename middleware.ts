@@ -1,13 +1,20 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const PUBLIC_PREFIXES = [
-  "/Ui-components/Pages/Login",
-  "/Ui-components/Pages/Regester",
+/** Pages that need login (cart, checkout, account…). Browse Home/Shop freely. */
+const PROTECTED_PREFIXES = [
+  "/Ui-components/Pages/Cart",
+  "/Ui-components/Pages/WishList",
+  "/Ui-components/Pages/Payment",
+  "/Ui-components/Pages/Cheackout",
+  "/Ui-components/Pages/Account",
+  "/Ui-components/Pages/Notifications",
+  "/Ui-components/Pages/Complaints",
+  "/checkout",
 ];
 
-function isPublicPath(pathname: string) {
-  return PUBLIC_PREFIXES.some(
+function isProtectedPath(pathname: string) {
+  return PROTECTED_PREFIXES.some(
     (p) => pathname === p || pathname.startsWith(`${p}/`)
   );
 }
@@ -15,16 +22,16 @@ function isPublicPath(pathname: string) {
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const hasSession = request.cookies.get("fashique_session")?.value === "1";
-  const publicPage = isPublicPath(pathname);
 
-  if (!publicPage && !hasSession) {
+  if (isProtectedPath(pathname) && !hasSession) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = "/Ui-components/Pages/Login";
     loginUrl.searchParams.set("next", pathname || "/");
     return NextResponse.redirect(loginUrl);
   }
 
-  if (publicPage && hasSession && pathname.includes("/Login")) {
+  // Already logged in on Login → go home or ?next=
+  if (hasSession && pathname.includes("/Pages/Login")) {
     const raw = request.nextUrl.searchParams.get("next") || "/";
     const next =
       raw.startsWith("/") && !raw.startsWith("//") ? raw : "/";

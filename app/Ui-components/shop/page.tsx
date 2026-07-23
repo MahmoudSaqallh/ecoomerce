@@ -5,7 +5,8 @@ import { useMemo, useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Follower from "../Index/Follower/Page";
+import Follower from "../Index/Follower/Follower";
+import { useLanguage } from "@/app/i18n/LanguageContext";
 
 type proudectType = {
   id: string;
@@ -22,6 +23,7 @@ type proudectType = {
 
 function ShopInner() {
   const searchParams = useSearchParams();
+  const { t, dir } = useLanguage();
 
   const [products, setProducts] = useState<proudectType[]>([]);
   const [categories, setCategories] = useState<
@@ -160,54 +162,68 @@ function ShopInner() {
   const addwishlist = (
     proudect: proudectType
   ): void => {
-    import("../api/session").then(({ getWishlist, setWishlist }) => {
-      const wishlist = getWishlist();
-      const existi = wishlist.find(
-        (item: { id: string }) => item.id === proudect.id
-      );
+    import("../api/session").then(
+      ({ getWishlist, setWishlist, requireLoginForAction, redirectToLogin }) => {
+        if (!requireLoginForAction()) {
+          toast.info(t.common.pleaseLoginWishlist);
+          redirectToLogin("/Ui-components/shop");
+          return;
+        }
+        const wishlist = getWishlist();
+        const existi = wishlist.find(
+          (item: { id: string }) => item.id === proudect.id
+        );
 
-      if (existi) {
-        toast.info("Already in Wishlist");
-        return;
+        if (existi) {
+          toast.info(t.common.alreadyInWishlist);
+          return;
+        }
+
+        wishlist.push({
+          id: proudect.id,
+          title: proudect.name,
+          price: `$${proudect.price}`,
+          image: proudect.imageUrl,
+        });
+
+        setWishlist(wishlist);
+        toast.success(t.common.addedToWishlist);
       }
-
-      wishlist.push({
-        id: proudect.id,
-        title: proudect.name,
-        price: `$${proudect.price}`,
-        image: proudect.imageUrl,
-      });
-
-      setWishlist(wishlist);
-      toast.success("Add to Wishlist");
-    });
+    );
   };
 
   const addtocart = (
     proudect: proudectType
   ): void => {
-    import("../api/session").then(({ getCart, setCart }) => {
-      const cart = getCart();
-      const existi = cart.find(
-        (item: { id: string }) => item.id === proudect.id
-      );
+    import("../api/session").then(
+      ({ getCart, setCart, requireLoginForAction, redirectToLogin }) => {
+        if (!requireLoginForAction()) {
+          toast.info(t.common.pleaseLoginCart);
+          redirectToLogin("/Ui-components/shop");
+          return;
+        }
+        const cart = getCart();
+        const existi = cart.find(
+          (item: { id: string }) => item.id === proudect.id
+        );
 
-      if (existi) {
-        toast.info("Already in cart");
-        return;
+        if (existi) {
+          toast.info(t.common.alreadyInCart);
+          return;
+        }
+
+        cart.push({
+          id: proudect.id,
+          title: proudect.name,
+          price: `$${proudect.price}`,
+          image: proudect.imageUrl,
+          qty: 1,
+        });
+
+        setCart(cart);
+        toast.success(t.common.addedToCart);
       }
-
-      cart.push({
-        id: proudect.id,
-        title: proudect.name,
-        price: `$${proudect.price}`,
-        image: proudect.imageUrl,
-        qty: 1,
-      });
-
-      setCart(cart);
-      toast.success("Add to Cart");
-    });
+    );
   };
 
   if (loading) {
@@ -243,7 +259,7 @@ function ShopInner() {
         <div className="z-10 flex flex-col justify-center items-center text-center">
 
           <h2 className="text-white text-8xl GolosText font-semibold">
-            Shop
+            {t.shop.title}
           </h2>
 
           <div className="flex mt-5 text-2xl items-center text-center">
@@ -252,13 +268,13 @@ function ShopInner() {
               href="/"
               className="hover:text-(--prim) text-white"
             >
-              Home
+              {t.shop.home}
             </Link>
 
-            <i className="ri-arrow-right-wide-line pt-2 px-2 text-white"></i>
+            <i className="ri-arrow-right-wide-line pt-2 px-2 text-white i18n-flip"></i>
 
             <span className="text-white">
-              Shop
+              {t.shop.title}
             </span>
 
           </div>
@@ -268,21 +284,21 @@ function ShopInner() {
       </div>
 
       {/* PRODUCTS */}
-      <div className="px-[8%] lg:px-[16%] gap-5 py-10">
+      <div className="px-[8%] lg:px-[16%] gap-5 py-10" dir={dir}>
 
         {/* Controls */}
         <div className="mb-10">
           <div className="flex flex-col lg:flex-row gap-4 lg:items-end lg:justify-between">
             <div className="flex-1">
               <label className="block text-sm Lufga text-gray-600 mb-2">
-                Search products
+                {t.shop.searchProducts}
               </label>
               <div className="flex items-center gap-3 border border-black/10 bg-white rounded-2xl px-4 py-3">
                 <i className="ri-search-line text-2xl text-(--second)"></i>
                 <input
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Search by name, description, or category..."
+                  placeholder={t.shop.searchPlaceholder}
                   className="w-full outline-none text-base bg-transparent"
                 />
                 {query.trim() && (
@@ -299,7 +315,7 @@ function ShopInner() {
 
             <div className="w-full lg:w-72">
               <label className="block text-sm Lufga text-gray-600 mb-2">
-                Sort
+                {t.shop.sort}
               </label>
               <select
                 value={sortBy}
@@ -308,10 +324,10 @@ function ShopInner() {
                 }
                 className="w-full border border-black/10 bg-white rounded-2xl px-4 py-3 outline-none"
               >
-                <option value="featured">Featured</option>
-                <option value="price-asc">Price: Low → High</option>
-                <option value="price-desc">Price: High → Low</option>
-                <option value="name-asc">Name: A → Z</option>
+                <option value="featured">{t.shop.featured}</option>
+                <option value="price-asc">{t.shop.priceLowHigh}</option>
+                <option value="price-desc">{t.shop.priceHighLow}</option>
+                <option value="name-asc">{t.shop.nameAZ}</option>
               </select>
             </div>
           </div>
@@ -327,7 +343,7 @@ function ShopInner() {
                     : "bg-white text-black border-black/10 hover:border-black/30"
                 }`}
               >
-                <span className="Lufga font-medium">All</span>
+                <span className="Lufga font-medium">{t.common.all}</span>
               </button>
               {filterCategories.map((cat) => (
                 <button
@@ -351,7 +367,7 @@ function ShopInner() {
           <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
             <div>
               <label className="block text-sm Lufga text-gray-600 mb-2">
-                Min price
+                {t.shop.minPrice}
               </label>
               <input
                 type="number"
@@ -364,7 +380,7 @@ function ShopInner() {
             </div>
             <div>
               <label className="block text-sm Lufga text-gray-600 mb-2">
-                Max price
+                {t.shop.maxPrice}
               </label>
               <input
                 type="number"
@@ -377,14 +393,14 @@ function ShopInner() {
             </div>
             <div>
               <label className="block text-sm Lufga text-gray-600 mb-2">
-                Size
+                {t.shop.size}
               </label>
               <select
                 value={selectedSize}
                 onChange={(e) => setSelectedSize(e.target.value)}
                 className="w-full border border-black/10 bg-white rounded-2xl px-4 py-3 outline-none"
               >
-                <option value="all">All sizes</option>
+                <option value="all">{t.shop.allSizes}</option>
                 {allSizes.map((s) => (
                   <option key={s} value={s}>
                     {s}
@@ -394,14 +410,14 @@ function ShopInner() {
             </div>
             <div>
               <label className="block text-sm Lufga text-gray-600 mb-2">
-                Color
+                {t.shop.color}
               </label>
               <select
                 value={selectedColor}
                 onChange={(e) => setSelectedColor(e.target.value)}
                 className="w-full border border-black/10 bg-white rounded-2xl px-4 py-3 outline-none"
               >
-                <option value="all">All colors</option>
+                <option value="all">{t.shop.allColors}</option>
                 {allColors.map((c) => (
                   <option key={c} value={c}>
                     {c}
@@ -416,14 +432,14 @@ function ShopInner() {
                   checked={inStockOnly}
                   onChange={(e) => setInStockOnly(e.target.checked)}
                 />
-                <span className="Lufga text-sm">In stock only</span>
+                <span className="Lufga text-sm">{t.shop.inStockOnly}</span>
               </label>
             </div>
           </div>
 
           <div className="mt-4 text-gray-500 Lufga">
-            Showing {filteredProducts.length} item
-            {filteredProducts.length !== 1 ? "s" : ""}.
+            {t.shop.showing} {filteredProducts.length}{" "}
+            {filteredProducts.length !== 1 ? t.shop.items : t.shop.item}.
           </div>
         </div>
 
@@ -432,10 +448,10 @@ function ShopInner() {
           {filteredProducts.length === 0 ? (
             <div className="md:col-span-2 lg:col-span-3 bg-white border border-black/10 rounded-3xl p-10 text-center">
               <p className="GolosText text-3xl font-bold mb-2">
-                No results
+                {t.shop.noResults}
               </p>
               <p className="text-gray-500 Lufga">
-                Try changing search or category filter.
+                {t.shop.tryChanging}
               </p>
             </div>
           ) : (
@@ -465,7 +481,7 @@ function ShopInner() {
                     ) : (
 
                       <div className="w-full h-[450px] flex items-center justify-center text-gray-500">
-                        No Image
+                        {t.shop.noImage}
                       </div>
 
                     )}
@@ -473,7 +489,7 @@ function ShopInner() {
                   </div>
 
                   {/* ICONS */}
-                  <div className="absolute top-11 right-5 flex flex-col gap-2">
+                  <div className="product-card-actions absolute top-11 end-5 flex flex-col gap-2">
 
                     <i
                       onClick={() =>
@@ -492,7 +508,7 @@ function ShopInner() {
                   </div>
 
                   {/* DETAILS BUTTON */}
-                  <div className="relative left-0 bottom-0 lg:absolute lg:bottom-[-20px] lg:left-10">
+                  <div className="product-card-details relative start-0 bottom-0 lg:absolute lg:bottom-[-20px] lg:start-10">
 
                     <Link
                       href={`/Ui-components/shop/${proudect.id}`}
@@ -500,7 +516,7 @@ function ShopInner() {
 
                       <button className="btn bg-black text-white cursor-pointer GolosText text-xl px-6 py-3 rounded-2xl w-full lg:w-auto lg:rounded-full border-3 border-white">
 
-                        View Details
+                        {t.shop.viewDetails}
 
                       </button>
 
@@ -529,7 +545,7 @@ function ShopInner() {
                       </h3>
                     </div>
                     <span className="inline-block mt-2 Lufga text-sm text-gray-500 underline underline-offset-4 group-hover:text-black transition-colors">
-                      Details
+                      {t.shop.details}
                     </span>
                   </div>
                 </Link>

@@ -1,19 +1,26 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
-
-const COMPLAINT_TYPES = [
-  { value: "product", label: "Product quality / issue" },
-  { value: "order", label: "Order problem" },
-  { value: "delivery", label: "Delivery / shipping" },
-  { value: "payment", label: "Payment issue" },
-  { value: "service", label: "Customer service" },
-  { value: "other", label: "Other" },
-];
+import { useLanguage } from "@/app/i18n/LanguageContext";
 
 export default function ComplaintsPage() {
+  const { t, dir } = useLanguage();
+  const c = t.pages.complaints;
+
+  const COMPLAINT_TYPES = useMemo(
+    () => [
+      { value: "product", label: c.types.product },
+      { value: "order", label: c.types.order },
+      { value: "delivery", label: c.types.delivery },
+      { value: "payment", label: c.types.payment },
+      { value: "service", label: c.types.service },
+      { value: "other", label: c.types.other },
+    ],
+    [t]
+  );
+
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -50,12 +57,12 @@ export default function ComplaintsPage() {
     e.preventDefault();
 
     if (!isLoggedIn || !form.email) {
-      toast.error("Please login first so updates reach your notifications");
+      toast.error(c.needLogin);
       return;
     }
 
     if (!form.name || !form.subject || !form.message) {
-      toast.error("Please fill all required fields");
+      toast.error(c.fillRequired);
       return;
     }
 
@@ -71,7 +78,7 @@ export default function ComplaintsPage() {
         subject: form.subject,
         message: form.message,
       });
-      toast.success("Complaint submitted — check Notifications for updates");
+      toast.success(c.success);
       window.dispatchEvent(new Event("fashique-notifications-change"));
       setForm((prev) => ({
         ...prev,
@@ -82,7 +89,7 @@ export default function ComplaintsPage() {
       }));
     } catch (error: unknown) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to submit complaint"
+        error instanceof Error ? error.message : c.fail
       );
     } finally {
       setSending(false);
@@ -94,41 +101,40 @@ export default function ComplaintsPage() {
       <div className="page-section flex justify-center items-center text-center">
         <div className="z-10 flex flex-col justify-center items-center text-center px-4">
           <h2 className="text-white text-5xl md:text-7xl GolosText font-semibold">
-            Complaints
+            {c.title}
           </h2>
           <div className="flex mt-5 text-lg md:text-2xl items-center text-center flex-wrap justify-center gap-1">
             <Link href="/" className="hover:text-(--prim) text-white">
-              Home
+              {c.home}
             </Link>
-            <i className="ri-arrow-right-wide-line pt-1 px-2 text-white"></i>
-            <span className="text-(--prim)">Complaints</span>
+            <i className="ri-arrow-right-wide-line pt-1 px-2 text-white i18n-flip"></i>
+            <span className="text-(--prim)">{c.crumb}</span>
           </div>
         </div>
       </div>
 
-      <div className="px-[8%] lg:px-[16%] py-14 md:py-20">
+      <div className="px-[8%] lg:px-[16%] py-14 md:py-20" dir={dir}>
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
           <div className="lg:col-span-5 bg-black text-white rounded-3xl p-8 md:p-10">
             <p className="Lufga uppercase tracking-[0.18em] text-sm text-[#FEEB9D] mb-2">
-              We listen
+              {c.weListen}
             </p>
             <h3 className="GolosText text-3xl md:text-4xl font-bold mb-4">
-              Tell us what went wrong
+              {c.tellWrong}
             </h3>
             <p className="text-gray-300 mb-8 Lufga">
-              Submit a complaint about an order, product, delivery, or service.
-              Our team will review it from the admin dashboard and follow up.
+              {c.tellBody}
             </p>
 
             <div className="space-y-4">
               <div className="bg-white/10 rounded-2xl p-4">
-                <p className="text-sm text-gray-300">Response time</p>
-                <p className="font-semibold">Usually within 24–48 hours</p>
+                <p className="text-sm text-gray-300">{c.responseTime}</p>
+                <p className="font-semibold">{c.responseValue}</p>
               </div>
               <div className="bg-white/10 rounded-2xl p-4">
-                <p className="text-sm text-gray-300">Need quick help?</p>
+                <p className="text-sm text-gray-300">{c.quickHelp}</p>
                 <p className="font-semibold">
-                  Use Contact Us for general questions
+                  {c.quickHelpValue}
                 </p>
               </div>
             </div>
@@ -136,32 +142,30 @@ export default function ComplaintsPage() {
 
           <div className="lg:col-span-7 bg-white border border-black/10 rounded-3xl p-8 md:p-10 shadow-sm">
             <h2 className="text-3xl GolosText font-bold mb-2">
-              Submit a Complaint
+              {c.submitTitle}
             </h2>
             <p className="text-gray-500 Lufga mb-7">
-              Updates (resolved / rejected) appear in your Notifications using
-              your account email.
+              {c.submitHint}
             </p>
 
             {!isLoggedIn ? (
               <div className="rounded-2xl border border-black/10 bg-[#fff7e8] p-6 text-center">
-                <p className="GolosText text-xl font-bold mb-2">Login required</p>
+                <p className="GolosText text-xl font-bold mb-2">{c.loginRequired}</p>
                 <p className="text-gray-600 Lufga mb-5">
-                  Sign in first so complaint updates reach your account
-                  notifications.
+                  {c.loginHint}
                 </p>
                 <Link
                   href="/Ui-components/Pages/Login"
                   className="btn inline-block bg-black text-white px-6 py-3 rounded-xl"
                 >
-                  Login
+                  {c.login}
                 </Link>
               </div>
             ) : (
             <form onSubmit={handleSubmit} className="space-y-5">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="Lufga text-sm mb-2 block">Full Name *</label>
+                  <label className="Lufga text-sm mb-2 block">{c.fullName}</label>
                   <input
                     type="text"
                     value={form.name}
@@ -172,7 +176,7 @@ export default function ComplaintsPage() {
                 </div>
                 <div>
                   <label className="Lufga text-sm mb-2 block">
-                    Account Email *
+                    {c.accountEmail}
                   </label>
                   <input
                     type="email"
@@ -182,14 +186,14 @@ export default function ComplaintsPage() {
                     placeholder="you@email.com"
                   />
                   <p className="text-xs text-gray-400 mt-1">
-                    Locked to your login email — notifications go here
+                    {c.emailLocked}
                   </p>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="Lufga text-sm mb-2 block">Phone</label>
+                  <label className="Lufga text-sm mb-2 block">{c.phone}</label>
                   <input
                     type="text"
                     value={form.phone}
@@ -202,7 +206,7 @@ export default function ComplaintsPage() {
                 </div>
                 <div>
                   <label className="Lufga text-sm mb-2 block">
-                    Order ID (optional)
+                    {c.orderId}
                   </label>
                   <input
                     type="text"
@@ -211,7 +215,7 @@ export default function ComplaintsPage() {
                       setForm({ ...form, orderId: e.target.value })
                     }
                     className="w-full px-4 py-3 border border-gray-300 bg-white rounded-xl focus:outline-none focus:border-black transition-colors"
-                    placeholder="e.g. ord-xxxx"
+                    placeholder={c.orderIdPh}
                   />
                 </div>
               </div>
@@ -219,22 +223,22 @@ export default function ComplaintsPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="Lufga text-sm mb-2 block">
-                    Complaint type *
+                    {c.type}
                   </label>
                   <select
                     value={form.type}
                     onChange={(e) => setForm({ ...form, type: e.target.value })}
                     className="w-full px-4 py-3 border border-gray-300 bg-white rounded-xl focus:outline-none focus:border-black transition-colors"
                   >
-                    {COMPLAINT_TYPES.map((t) => (
-                      <option key={t.value} value={t.value}>
-                        {t.label}
+                    {COMPLAINT_TYPES.map((type) => (
+                      <option key={type.value} value={type.value}>
+                        {type.label}
                       </option>
                     ))}
                   </select>
                 </div>
                 <div>
-                  <label className="Lufga text-sm mb-2 block">Subject *</label>
+                  <label className="Lufga text-sm mb-2 block">{c.subject}</label>
                   <input
                     type="text"
                     value={form.subject}
@@ -242,20 +246,20 @@ export default function ComplaintsPage() {
                       setForm({ ...form, subject: e.target.value })
                     }
                     className="w-full px-4 py-3 border border-gray-300 bg-white rounded-xl focus:outline-none focus:border-black transition-colors"
-                    placeholder="Short summary"
+                    placeholder={c.subjectPh}
                   />
                 </div>
               </div>
 
               <div>
-                <label className="Lufga text-sm mb-2 block">Details *</label>
+                <label className="Lufga text-sm mb-2 block">{c.details}</label>
                 <textarea
                   value={form.message}
                   onChange={(e) =>
                     setForm({ ...form, message: e.target.value })
                   }
                   className="w-full px-4 py-3 border border-gray-300 bg-white rounded-xl focus:outline-none focus:border-black transition-colors"
-                  placeholder="Describe the issue clearly..."
+                  placeholder={c.detailsPh}
                   rows={6}
                   maxLength={1000}
                 />
@@ -266,7 +270,7 @@ export default function ComplaintsPage() {
                 disabled={sending}
                 className="btn bg-black text-white cursor-pointer GolosText px-6 py-3 rounded-xl transition-all duration-300 w-full md:w-auto disabled:opacity-60"
               >
-                {sending ? "Submitting..." : "Submit Complaint"}
+                {sending ? c.submitting : c.submitBtn}
               </button>
             </form>
             )}

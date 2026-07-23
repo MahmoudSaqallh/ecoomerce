@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { resolveSitePath } from "@/app/lib/sitePaths";
 
 type NotificationItem = {
   id: string;
@@ -214,7 +215,7 @@ export default function NotificationsPage() {
                     ) : null}
                     {n.link ? (
                       <Link
-                        href={n.link}
+                        href={resolveSitePath(n.link, "/Ui-components/Pages/Notifications")}
                         className="border border-black px-3 py-2 rounded-xl text-sm hover:bg-black hover:text-white transition"
                       >
                         Open

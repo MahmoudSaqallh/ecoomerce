@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import HeroImg from "@/public/Hero.webp";
 import HeroSmall from "@/public/hero-small-1.webp";
+import { useLanguage } from "@/app/i18n/LanguageContext";
+import { resolveSitePath } from "@/app/lib/sitePaths";
 
 type Banner = {
   id: string;
@@ -20,6 +22,7 @@ function isUploadedImage(url: string) {
 }
 
 export default function Hero() {
+  const { t, dir } = useLanguage();
   const [banners, setBanners] = useState<Banner[]>([]);
 
   useEffect(() => {
@@ -27,7 +30,7 @@ export default function Hero() {
       try {
         const { fetchBanners } = await import("../../api/auth");
         const data = await fetchBanners();
-        setBanners(data);
+        setBanners(Array.isArray(data) ? data : data?.banners || []);
       } catch {
         setBanners([]);
       }
@@ -38,17 +41,14 @@ export default function Hero() {
   const mainBanner = banners[0];
   const cardBanner = banners[1];
 
-  const title = mainBanner?.title || "Your Ultimate Online Store";
-  const description =
-    mainBanner?.description ||
-    "For all your needs. No code needed — plus free shipping on $99+ orders!";
-  const primaryLabel = mainBanner?.buttonText || "Our Shop";
-  const primaryLink = mainBanner?.link || "/Ui-components/shop";
+  const title = mainBanner?.title || t.home.heroTitle;
+  const description = mainBanner?.description || t.home.heroDescription;
+  const primaryLabel = mainBanner?.buttonText || t.home.ourShop;
+  const primaryLink = resolveSitePath(mainBanner?.link);
 
-  const cardTitle = cardBanner?.title || "Summer Collection";
-  const cardDescription =
-    cardBanner?.description || "Fresh styles for the season";
-  const cardLink = cardBanner?.link || "/Ui-components/shop";
+  const cardTitle = cardBanner?.title || t.home.summerCollection;
+  const cardDescription = cardBanner?.description || t.home.summerDesc;
+  const cardLink = resolveSitePath(cardBanner?.link);
 
   const mainUpload =
     mainBanner?.imageUrl && isUploadedImage(mainBanner.imageUrl)
@@ -60,13 +60,13 @@ export default function Hero() {
       : null;
 
   return (
-    <div className="px-[8%] lg:px-[10%] lg:ps-[16%] py-10">
+    <div className="hero-section px-[8%] lg:px-[10%] lg:ps-[16%] py-10" dir={dir}>
       <div className="flex flex-col lg:flex-row gap-5 justify-between items-center relative">
         <div className="hero-shape3"></div>
         <div className="hero-shape4"></div>
 
         <div className="w-full lg:w-1/2">
-          <div className="hero-content">
+          <div className="hero-content text-start">
             <h1 className="GolosText text-4xl md:text-7xl lg:text-[4rem] font-semibold leading-tight">
               {title}
             </h1>
@@ -77,9 +77,9 @@ export default function Hero() {
                   {primaryLabel}
                 </button>
               </Link>
-              <Link href="/Ui-components/shop">
+              <Link href="/sale">
                 <button className="btn border border-black hover:bg-black hover:text-white cursor-pointer GolosText text-xl px-6 py-3 rounded-md transition-all duration-300">
-                  View Sale
+                  {t.home.viewSale}
                 </button>
               </Link>
             </div>
@@ -98,7 +98,7 @@ export default function Hero() {
 
             <Link
               href={cardLink}
-              className="absolute bottom-6 left-2 md:left-6 z-30 max-w-[280px] shadow-2xl bg-[#ffffffcb] backdrop-blur-2xl px-3 py-2 flex items-center gap-2 rounded-2xl"
+              className="absolute bottom-6 start-2 md:start-6 z-30 max-w-[280px] shadow-2xl bg-[#ffffffcb] backdrop-blur-2xl px-3 py-2 flex items-center gap-2 rounded-2xl"
             >
               {cardUpload ? (
                 <img
@@ -122,7 +122,7 @@ export default function Hero() {
                 <p className="GolosText text-xs text-gray-600 line-clamp-1">
                   {cardDescription}
                 </p>
-                <i className="bi bi-basket absolute bottom-0 right-0 bg-(--second) hover:bg-(--prim) hover:text-black cursor-pointer text-white px-3 py-2 rounded-full transition-all duration-300"></i>
+                <i className="bi bi-basket absolute bottom-0 end-0 bg-(--second) hover:bg-(--prim) hover:text-black cursor-pointer text-white px-3 py-2 rounded-full transition-all duration-300"></i>
               </div>
             </Link>
 
